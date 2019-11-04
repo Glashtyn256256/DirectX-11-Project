@@ -77,6 +77,8 @@ struct PSInput
 {
 	float4 pos:SV_Position;
 	float4 colour:COLOUR0;
+	float4 normal:NORMAL;
+	float4 utps:POSITION; //untransforemdworldposition //original position of pixel
 // Something missing here...
 
 };
@@ -92,7 +94,7 @@ void VSMain(const VSInput input, out PSInput output)
 	output.pos = mul(input.pos, g_WVP);
 
 	// You also need to pass through the untransformed world position to the PS
-
+	output.utps = input.pos;
 	float3 worldNormal = mul(input.normal, g_InvXposeW);
 
 	output.colour = input.colour * GetLightingColour(input.pos, normalize(worldNormal));
@@ -101,15 +103,25 @@ void VSMain(const VSInput input, out PSInput output)
 // This gets called for every pixel which needs to be drawn
 void PSMain(const PSInput input, out PSOutput output)
 {
-	output.colour = input.colour;
+	float4 lightFinalColour = { 0.8f, 0.8f, 0.8f, 1.0f }; //CHANGED THE AMBIENT
+	
 
+	for (int i = 0; i < MAX_NUM_LIGHTS; i++)
+	{
+		float intensity = clamp(dot(g_lightDirections[i], input.normal), 0, 1); //clamp due to intesity between 0 and 1
+		lightFinalColour += float4(g_lightColours[i] * intensity, 1);
+	}
+	float4 finalColour = input.colour * lightFinalColour;
 	// Transform the pixel into light space
-
+	float4 lightSpace = mul(input.utps, g_shadowMatrix);
 	// Perform perspective correction
-
+	float4 p = lightSpace / lightSpace.w;
 	// Scale and offset uvs into 0-1 range.
-
+	float pX = (p.x + 1.0f)/2.0f;
+	float pY = 1-(p.y + 1.0f)/2.0f;
 	// Sample render target to see if this pixel is in shadow
-
+	float4 shadowRealm = g_shadowTexture.Sample(g_shadowSampler, float2(pX,pY));
 	// If it is then alpha blend between final colour and shadow colour
+
+	output.colour =  shadowRealm + finalColour;
 }

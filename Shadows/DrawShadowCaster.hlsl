@@ -21,12 +21,13 @@ struct PSOutput
 void VSMain(const VSInput input, out PSInput output)
 {
 	// Transform each vertex into world space
+	float4 worldNormal = mul(input.pos, g_WVP);
 	// This is just a dummy line of code which does nothing
-	output.pos = float4(0, 0, 0, 0);
+	output.pos = worldNormal;
 }
 
 void PSMain(const PSInput input, out PSOutput output)
 {
 	// Draw a pixel colour other than black
-	output.colour = float4(0, 0, 0, 0);
+	output.colour = float4(1, 0, 0, 1);
 }
