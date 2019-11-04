@@ -120,7 +120,7 @@ void PSMain(const PSInput input, out PSOutput output)
 	float pX = (p.x + 1.0f)/2.0f;
 	float pY = 1-(p.y + 1.0f)/2.0f;
 	// Sample render target to see if this pixel is in shadow
-	float4 shadowRealm = g_shadowTexture.Sample(g_shadowSampler, float2(pX,pY));
+	float4 shadowRealm = g_shadowTexture.Sample(g_shadowSampler, float2(pX,pY)); //float 2 is UV
 	// If it is then alpha blend between final colour and shadow colour
 
 	output.colour =  shadowRealm + finalColour;
