@@ -292,15 +292,27 @@ void Application::RenderShadow()
 	float zn = 1.0f;
 	float zf = 1000.0f;
 	float aspect = 1.2f;*/
+	float aspect = RENDER_TARGET_WIDTH / RENDER_TARGET_HEIGHT;
 
-	float fovy = 0.8f;
-	float zn = 1.0f;
-	float zf = 1000.0f;
-	float aspect = RENDER_TARGET_WIDTH/ RENDER_TARGET_HEIGHT;
+	float distanceToPlane = sqrt(pow(vTemp.x - m_shadowCastingLightPosition.x, 2) + 
+		pow(vTemp.y - m_shadowCastingLightPosition.y, 2) + 
+		pow(vTemp.z - m_shadowCastingLightPosition.z, 2)); //pythagoras REMEMBER  THE CAMERA ON THE SLIDES IS THE LIGHTSOURCE.
+	
+	float fovy = atan(AEROPLANE_RADIUS/distanceToPlane)* 2; //Sohcahtoa
+	float zn = distanceToPlane - AEROPLANE_RADIUS;
+	float zf = distanceToPlane + AEROPLANE_RADIUS;
+	//float aspect = RENDER_TARGET_WIDTH/ RENDER_TARGET_HEIGHT;
 	// You will find the following constants (defined above) useful:
 	// RENDER_TARGET_WIDTH, RENDER_TARGET_HEIGHT, AEROPLANE_RADIUS
 	//*************************************************************************
-
+	if (zn <= 0.f)
+	{
+		zn = 0.1f;
+	}
+	if (zf <= 0.f)
+	{
+		zf = 0.1f;
+	}
 	XMMATRIX projMtx;
 	projMtx = XMMatrixPerspectiveFovLH(fovy, aspect, zn, zf);
 	this->SetProjectionMatrix(projMtx);

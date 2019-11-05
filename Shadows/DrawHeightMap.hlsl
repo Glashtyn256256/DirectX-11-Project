@@ -97,7 +97,7 @@ void VSMain(const VSInput input, out PSInput output)
 	output.utps = input.pos;
 	float3 worldNormal = mul(input.normal, g_InvXposeW);
 
-	output.colour = input.colour * GetLightingColour(input.pos, normalize(worldNormal));
+	output.colour = input.colour *GetLightingColour(input.pos, normalize(worldNormal));
 }
 
 // This gets called for every pixel which needs to be drawn
@@ -105,13 +105,13 @@ void PSMain(const PSInput input, out PSOutput output)
 {
 	float4 lightFinalColour = { 0.8f, 0.8f, 0.8f, 1.0f }; //CHANGED THE AMBIENT
 	
-
-	for (int i = 0; i < MAX_NUM_LIGHTS; i++)
-	{
-		float intensity = clamp(dot(g_lightDirections[i], input.normal), 0, 1); //clamp due to intesity between 0 and 1
-		lightFinalColour += float4(g_lightColours[i] * intensity, 1);
-	}
-	float4 finalColour = input.colour * lightFinalColour;
+	output.colour = input.colour;
+	//for (int i = 0; i < MAX_NUM_LIGHTS; i++)
+	//{
+	//	float intensity = clamp(dot(g_lightDirections[i], input.normal), 0, 1); //clamp due to intesity between 0 and 1
+	//	lightFinalColour += float4(g_lightColours[i] * intensity, 1);
+	//}
+	float4 finalColour = input.colour;// *lightFinalColour;
 	// Transform the pixel into light space
 	float4 lightSpace = mul(input.utps, g_shadowMatrix);
 	// Perform perspective correction
@@ -120,8 +120,15 @@ void PSMain(const PSInput input, out PSOutput output)
 	float pX = (p.x + 1.0f)/2.0f;
 	float pY = 1-(p.y + 1.0f)/2.0f;
 	// Sample render target to see if this pixel is in shadow
-	float4 shadowRealm = g_shadowTexture.Sample(g_shadowSampler, float2(pX,pY)); //float 2 is UV
-	// If it is then alpha blend between final colour and shadow colour
 
-	output.colour =  shadowRealm + finalColour;
+	float4 shadowRealm = g_shadowTexture.Sample(g_shadowSampler, float2(pX,pY)); //float 2 is UV
+	
+	if (lightSpace.w > 0) 
+	{
+		// blend between final colour and shadow colour
+		finalColour = lerp(finalColour, g_shadowColour, shadowRealm.a / 2);
+	}
+	output.colour = finalColour;
+	
+
 }
