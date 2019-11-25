@@ -157,16 +157,17 @@ void Aeroplane::Update( bool bPlayerControl )
 	if( bPlayerControl )
 	{
 		// Step 1: Make the plane pitch upwards on the up arrow key and return to level when released
+		// You can also impose a take off seeepd of 0.5 if you like && m_fSpeed > 0.5
 		// Maximum pitch = 60 degrees
-		if (Application::s_pApp->IsKeyPressed('Q') && m_v4Rot.x < 60 && m_fSpeed > 0.5)
+		if (Application::s_pApp->IsKeyPressed('Q') && m_v4Rot.x < 60)
 			m_v4Rot.x += 2.0f;
 		else if (!Application::s_pApp->IsKeyPressed('Q') && m_v4Rot.x > 0)
 			m_v4Rot.x -= 1.0f;
 
 		// Step 2: Make the plane pitch downwards on the down arrow key and return to level when released
-		// You can also impose a take off seeepd of 0.5 if you like
+		// You can also impose a take off seeepd of 0.5 if you like && m_fSpeed > 0.5
 		// Minimum pitch = -60 degrees
-		if (Application::s_pApp->IsKeyPressed('A') && m_v4Rot.x > -60 && m_fSpeed > 0.5)
+		if (Application::s_pApp->IsKeyPressed('A') && m_v4Rot.x > -60 )
 			m_v4Rot.x -= 2.0f;
 		else if (!Application::s_pApp->IsKeyPressed('A') && m_v4Rot.x < 0)
 			m_v4Rot.x += 1.0f;
@@ -196,7 +197,7 @@ void Aeroplane::Update( bool bPlayerControl )
 	} // End of if player control
 
 	// Apply a forward thrust and limit to a maximum speed of 1
-	//m_fSpeed += 0.001f;
+	m_fSpeed += 0.001f;
 
 	if( m_fSpeed > 1 )
 		m_fSpeed = 1;
