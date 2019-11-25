@@ -25,6 +25,7 @@ private:
 
 	ID3D11Buffer *m_pHeightMapBuffer;
 
+	void ReturnAverageNormal(int mapindex, XMVECTOR & averagenormal);
 	int m_HeightMapWidth;
 	int m_HeightMapLength;
 	int m_HeightMapVtxCount;
