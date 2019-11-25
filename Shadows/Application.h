@@ -16,6 +16,14 @@ class Aeroplane;
 class AeroplaneMeshes;
 class HeightMap;
 
+static const char* const g_aTextureFileNames[] = {
+	"Resources/Moss.dds",
+	"Resources/Grass.dds",
+	"Resources/Asphalt.dds",
+	"Resources/MaterialMap.dds",
+};
+
+static const size_t NUM_TEXTURE_FILES = sizeof g_aTextureFileNames / sizeof g_aTextureFileNames[0];
 //////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////
 
@@ -76,6 +84,17 @@ private:
 	ID3D11Buffer *m_pRenderTargetDebugDisplayBuffer;
 
 	ID3D11SamplerState *m_pShadowSamplerState;
+
+	//Heightmap splat mat
+	ID3D11Texture2D* m_pTextures[NUM_TEXTURE_FILES];
+	ID3D11ShaderResourceView* m_pTextureViews[NUM_TEXTURE_FILES];
+	ID3D11SamplerState* m_pSamplerState;
+
+	int m_psTexture0;
+	int m_psTexture1;
+	int m_psTexture2;
+	int m_vsMaterialMap;
+	int m_sampler;
 
 	bool CreateRenderTarget();
 

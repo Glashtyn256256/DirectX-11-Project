@@ -14,12 +14,15 @@ HeightMap::HeightMap(char* filename, float gridSize, CommonApp::Shader *pShader)
 	static const VertexColour MAP_COLOUR(200, 255, 255, 255);
 
 	m_HeightMapVtxCount = (m_HeightMapLength - 1)*(m_HeightMapWidth - 1) * 6;
-	m_pMapVtxs = new Vertex_Pos3fColour4ubNormal3f[ m_HeightMapVtxCount ];
+	m_pMapVtxs = new Vertex_Pos3fColour4ubNormal3fTex2f[ m_HeightMapVtxCount ];
 	
 	int vtxIndex = 0;
 	int mapIndex = 0;
 
 	XMVECTOR v0, v1, v2, v3;
+	XMVECTOR t0, t1, t2, t3;
+	XMFLOAT3 v512 = XMFLOAT3(512.0f, 0.0f, 512.0f);
+	XMVECTOR vOffset = XMLoadFloat3(&v512);
 
 	for( int l = 0; l < m_HeightMapLength; ++l )
 	{
@@ -45,12 +48,22 @@ HeightMap::HeightMap(char* filename, float gridSize, CommonApp::Shader *pShader)
 
 				VertexColour CUBE_COLOUR;
 
-				m_pMapVtxs[vtxIndex+0] = Vertex_Pos3fColour4ubNormal3f(v0, MAP_COLOUR, vN1 );
-				m_pMapVtxs[vtxIndex+1] = Vertex_Pos3fColour4ubNormal3f(v1, MAP_COLOUR, vN1 );
-				m_pMapVtxs[vtxIndex+2] = Vertex_Pos3fColour4ubNormal3f(v2, MAP_COLOUR, vN1 );
-				m_pMapVtxs[vtxIndex+3] = Vertex_Pos3fColour4ubNormal3f(v2, MAP_COLOUR, vN2 );
-				m_pMapVtxs[vtxIndex+4] = Vertex_Pos3fColour4ubNormal3f(v1, MAP_COLOUR, vN2 );
-				m_pMapVtxs[vtxIndex+5] = Vertex_Pos3fColour4ubNormal3f(v3, MAP_COLOUR, vN2 );
+				t0 = (v0 + vOffset) / 32.0f;
+				t1 = (v1 + vOffset) / 32.0f;
+				t2 = (v2 + vOffset) / 32.0f;
+				t3 = (v3 + vOffset) / 32.0f;
+
+				t0 = XMVectorSwizzle(t0, 0, 2, 1, 3);
+				t1 = XMVectorSwizzle(t1, 0, 2, 1, 3);
+				t2 = XMVectorSwizzle(t2, 0, 2, 1, 3);
+				t3 = XMVectorSwizzle(t3, 0, 2, 1, 3);
+
+				m_pMapVtxs[vtxIndex + 0] = Vertex_Pos3fColour4ubNormal3fTex2f(v0, MAP_COLOUR, vN1, t0);
+				m_pMapVtxs[vtxIndex + 1] = Vertex_Pos3fColour4ubNormal3fTex2f(v1, MAP_COLOUR, vN1, t1);
+				m_pMapVtxs[vtxIndex + 2] = Vertex_Pos3fColour4ubNormal3fTex2f(v2, MAP_COLOUR, vN1, t2);
+				m_pMapVtxs[vtxIndex + 3] = Vertex_Pos3fColour4ubNormal3fTex2f(v2, MAP_COLOUR, vN2, t2);
+				m_pMapVtxs[vtxIndex + 4] = Vertex_Pos3fColour4ubNormal3fTex2f(v1, MAP_COLOUR, vN2, t1);
+				m_pMapVtxs[vtxIndex + 5] = Vertex_Pos3fColour4ubNormal3fTex2f(v3, MAP_COLOUR, vN2, t3);
 
 				vtxIndex += 6;
 			}
@@ -59,7 +72,7 @@ HeightMap::HeightMap(char* filename, float gridSize, CommonApp::Shader *pShader)
 		}
 	}
 
-	m_pHeightMapBuffer = CreateImmutableVertexBuffer(Application::s_pApp->GetDevice(), sizeof Vertex_Pos3fColour4ubNormal3f * m_HeightMapVtxCount, m_pMapVtxs);
+	m_pHeightMapBuffer = CreateImmutableVertexBuffer(Application::s_pApp->GetDevice(), sizeof Vertex_Pos3fColour4ubNormal3fTex2f * m_HeightMapVtxCount, m_pMapVtxs);
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -73,13 +86,13 @@ HeightMap::~HeightMap()
 //////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////
 
-void HeightMap::Draw( void )
+void HeightMap::Draw(ID3D11SamplerState* samplerstate)
 {
 	CommonApp::Shader *pShader = m_pShader;
 	if (!pShader)
 		pShader = Application::s_pApp->GetUntexturedLitShader();
 
-	Application::s_pApp->DrawWithShader(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST, m_pHeightMapBuffer, sizeof(Vertex_Pos3fColour4ubNormal3f), NULL, 0, m_HeightMapVtxCount, NULL, NULL, pShader);
+	Application::s_pApp->DrawWithShader(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST, m_pHeightMapBuffer, sizeof(Vertex_Pos3fColour4ubNormal3fTex2f), NULL, 0, m_HeightMapVtxCount, NULL, samplerstate, pShader);
 
 }
 

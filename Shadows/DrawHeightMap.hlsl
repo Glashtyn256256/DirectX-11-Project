@@ -71,14 +71,17 @@ struct VSInput
 	float4 pos:POSITION;
 	float4 colour:COLOUR0;
 	float3 normal:NORMAL;
+	float2 tex:TEXCOORD;
 };
 
 struct PSInput
 {
 	float4 pos:SV_Position;
 	float4 colour:COLOUR0;
-	float4 normal:NORMAL;
+	float3 normal:NORMAL;
 	float4 utps:POSITION; //untransforemdworldposition //original position of pixel
+	float2 tex:TEXCOORD;
+	float4 mat:COLOUR1;
 // Something missing here...
 
 };
@@ -88,10 +91,26 @@ struct PSOutput
 	float4 colour:SV_Target;
 };
 
+Texture2D g_materialMap; //materialmap.dds
+Texture2D g_texture0; // green grass
+Texture2D g_texture1; // yellow grass
+Texture2D g_texture2; // Gravel
+
+// Define a state setting 'slot' for the sampler e.g. wrap/clamp modes, filtering etc.
+SamplerState g_sampler;
+
 // This gets called for every vertex which needs to be transformed
 void VSMain(const VSInput input, out PSInput output)
 {
 	output.pos = mul(input.pos, g_WVP);
+
+	//uv 0 to 1 to texture
+	float2 newInputPos = (input.pos.xz + 512) / 1024; // between 0 and 1. to get x and y co-ords on the mat
+	newInputPos.y = 1 - newInputPos.y;
+
+	output.mat = g_materialMap.SampleLevel(g_sampler, newInputPos.xy, 0);
+	output.normal = input.normal;
+	output.tex = input.tex;
 
 	// You also need to pass through the untransformed world position to the PS
 	output.utps = input.pos;
@@ -104,14 +123,15 @@ void VSMain(const VSInput input, out PSInput output)
 void PSMain(const PSInput input, out PSOutput output)
 {
 	float4 lightFinalColour = { 0.8f, 0.8f, 0.8f, 1.0f }; //CHANGED THE AMBIENT
-	
-	output.colour = input.colour;
-	//for (int i = 0; i < MAX_NUM_LIGHTS; i++)
-	//{
-	//	float intensity = clamp(dot(g_lightDirections[i], input.normal), 0, 1); //clamp due to intesity between 0 and 1
-	//	lightFinalColour += float4(g_lightColours[i] * intensity, 1);
-	//}
-	float4 finalColour = input.colour;// *lightFinalColour;
+	float4 finalColour = input.colour;// *lightFinalColour
+	float4 tex0 = g_texture0.Sample(g_sampler, input.tex);
+	float4 tex1 = g_texture1.Sample(g_sampler, input.tex);
+	float4 tex2 = g_texture2.Sample(g_sampler, input.tex);
+
+	finalColour = lerp(finalColour, tex0, input.mat.r); //How much texture we want based on the material map, the material maps red colour
+	finalColour = lerp(finalColour, tex1, input.mat.g); //How much texture we want based on the material map, the material maps green colour
+	finalColour = lerp(finalColour, tex2, input.mat.b); //How much texture we want based on the material map, the material maps blue colour
+
 	// Transform the pixel into light space
 	float4 lightSpace = mul(input.utps, g_shadowMatrix);
 	// Perform perspective correction
@@ -129,6 +149,4 @@ void PSMain(const PSInput input, out PSOutput output)
 		finalColour = lerp(finalColour, g_shadowColour, shadowRealm.a / 2);
 	}
 	output.colour = finalColour;
-	
-
 }

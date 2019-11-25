@@ -18,7 +18,7 @@ public:
 	HeightMap(char* filename, float gridSize, CommonApp::Shader *pShader);
 	~HeightMap();
 
-	void Draw( void );
+	void Draw(ID3D11SamplerState* samplerstate);
 
 private:
 	bool LoadHeightMap(char* filename, float gridSize);
@@ -31,7 +31,7 @@ private:
 	int m_HeightMapFaceCount;
 	int m_FacesPerRow;
 	XMFLOAT3* m_pHeightMap;
-	Vertex_Pos3fColour4ubNormal3f* m_pMapVtxs;
+	Vertex_Pos3fColour4ubNormal3fTex2f* m_pMapVtxs;
 	CommonApp::Shader *m_pShader;
 
 };

@@ -25,6 +25,14 @@ bool Application::HandleStart()
 
 	this->SetWindowTitle("Shadows");
 
+	for (size_t i = 0; i < NUM_TEXTURE_FILES; ++i)
+	{
+		m_pTextures[i] = NULL;
+		m_pTextureViews[i] = NULL;
+	}
+
+	m_pSamplerState = NULL;
+
 	m_pHeightMap = NULL;
 
 	m_pAeroplane = NULL;
@@ -58,19 +66,24 @@ bool Application::HandleStart()
 		{NULL},
 	};
 
-	if (!this->CompileShaderFromFile(&m_drawShadowCasterShader, "DrawShadowCaster.hlsl", aMacros, g_aVertexDesc_Pos3fColour4ubNormal3f, g_vertexDescSize_Pos3fColour4ubNormal3f))
+	if (!this->CompileShaderFromFile(&m_drawShadowCasterShader, "DrawShadowCaster.hlsl", aMacros, g_aVertexDesc_Pos3fColour4ubNormal3fTex2f, g_vertexDescSize_Pos3fColour4ubNormal3fTex2f))
 		return false;
 
 	// DrawHeightMap.hlsl
 	{
 		ID3D11VertexShader *pVS = NULL;
 		ID3D11PixelShader *pPS = NULL;
-		ID3D11InputLayout *pIL = NULL;
+		ID3D11InputLayout *pIL = NULL;		
 		ShaderDescription vs, ps;
+
+		for (size_t i = 0; i < NUM_TEXTURE_FILES; ++i)
+		{
+			LoadTextureFromFile(Application::s_pApp->GetDevice(), g_aTextureFileNames[i], &m_pTextures[i], &m_pTextureViews[i], &m_pSamplerState);
+		}
 
 		if (!CompileShadersFromFile(m_pD3DDevice, "DrawHeightMap.hlsl",
 			"VSMain", &pVS, &vs,
-			g_aVertexDesc_Pos3fColour4ubNormal3f, g_vertexDescSize_Pos3fColour4ubNormal3f, &pIL,
+			g_aVertexDesc_Pos3fColour4ubNormal3fTex2f, g_vertexDescSize_Pos3fColour4ubNormal3fTex2f, &pIL,
 			"PSMain", &pPS, &ps,
 			aMacros))
 		{
@@ -89,8 +102,15 @@ bool Application::HandleStart()
 		ps.FindFloat4(m_drawHeightMapShaderPSConstants.slot, "g_shadowColour", &m_drawHeightMapShaderPSConstants.shadowColour);
 		m_drawHeightMapShaderPSConstants.pCB = CreateBuffer(m_pD3DDevice, ps.GetCBufferSizeBytes(m_drawHeightMapShaderPSConstants.slot), D3D11_USAGE_DYNAMIC, D3D11_BIND_CONSTANT_BUFFER, D3D11_CPU_ACCESS_WRITE, NULL);
 
+		ps.FindTexture("g_texture0", &m_psTexture0);
+		ps.FindTexture("g_texture1", &m_psTexture1);
+		ps.FindTexture("g_texture2", &m_psTexture2);
+
+		vs.FindTexture("g_materialMap", &m_vsMaterialMap);
+		
 		ps.FindTexture("g_shadowTexture", &m_heightMapShaderShadowTexture);
 		ps.FindSamplerState("g_shadowSampler", &m_heightMapShaderShadowSampler);
+		
 	}
 
 	if (!this->CreateRenderTarget())
@@ -144,7 +164,10 @@ void Application::HandleStop()
 	Release(m_pRenderTargetDepthStencilTargetView);
 
 	Release(m_pShadowSamplerState);
-
+//	Release(m_pSamplerState);
+//	Release(m_pTextures[MAX_NUM_LIGHTS]);
+//	Release(m_pTextureViews[MAX_NUM_LIGHTS]);
+//
 	Release(m_drawHeightMapShaderVSConstants.pCB);
 	Release(m_drawHeightMapShaderPSConstants.pCB);
 
@@ -424,7 +447,21 @@ void Application::Render3D()
 		if (m_heightMapShaderShadowTexture >= 0)
 			m_pD3DDeviceContext->PSSetShaderResources(m_heightMapShaderShadowTexture, 1, &m_pRenderTargetColourTextureView);
 
-		m_pHeightMap->Draw();
+		if (m_psTexture0 >= 0)
+			m_pD3DDeviceContext->PSSetShaderResources(m_psTexture0, 1, &m_pTextureViews[0]);
+
+		if (m_psTexture1 >= 0)
+			m_pD3DDeviceContext->PSSetShaderResources(m_psTexture1, 1, &m_pTextureViews[1]);
+
+		if (m_psTexture2 >= 0)
+			m_pD3DDeviceContext->PSSetShaderResources(m_psTexture2, 1, &m_pTextureViews[2]);
+
+		if (m_vsMaterialMap >= 0)
+			m_pD3DDeviceContext->VSSetShaderResources(m_vsMaterialMap, 1, &m_pTextureViews[3]);
+
+		m_pSamplerState = Application::s_pApp->GetSamplerState(true, true, true);
+
+		m_pHeightMap->Draw(m_pSamplerState);
 	}
 
 	m_pAeroplane->Draw(m_pAeroplaneDefaultMeshes);
