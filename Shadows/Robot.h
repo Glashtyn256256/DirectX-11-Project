@@ -3,6 +3,7 @@
 
 #include "AnimationDataDae.h"
 #include "Application.h"
+#include "CommonApp.h"
 #include <iostream>
 #include <String>
 #include <fstream>
@@ -21,10 +22,12 @@ public:
 
 	void SetWorldPosition(float wposX, float wposY, float wposZ, float wposW, float wrotX, float wrotY, float wrotZ, float wrotW);
 	void LoadResources(Robot* robotmesh);
+	void ChangeMeshToShadow(CommonApp::Shader& shader);
 	void ReleaseResources(void);
 	void UpdateMatrices(void);
 	void Update();
 	void DrawAll(void);
+	void DrawShadow(void);
 	void SetUpMeshes();
 
 	void SetUpAnimations(void);
@@ -41,6 +44,7 @@ private:
 	XMFLOAT4 m_v4WorldPosition;
 	XMFLOAT4 m_v4RotationPosition;
 	std::vector<CommonMesh*> meshCollection;
+	std::vector<CommonMesh*> shadowMeshCollection;
 	XMMATRIX m_mWorldPosition;
 	Transform transform;
 	int count = 0;

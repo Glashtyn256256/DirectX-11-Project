@@ -1,5 +1,7 @@
 #include "Robot.h"
 #include <math.h>
+#include "CommonApp.h"
+
 
 //Robot::Robot(std::string filepath)
 //{
@@ -116,6 +118,7 @@ void Robot::SetUpMeshes()
 	for (int i = 1; i < skeletonParts.size(); i++) //Start at one because you don't need a mesh for the root
 	{
 		meshCollection.push_back(nullptr);
+		shadowMeshCollection.push_back(nullptr);
 	}
 };
 
@@ -315,6 +318,8 @@ void Robot::LoadResources(Robot* robotmesh)
 			std::string foldername;
 			foldername = "Resources/" + folderName + "/" + skeletonParts[i].GetPartName() + ".x";
 			meshCollection[i - 1] = CommonMesh::LoadFromXFile(Application::s_pApp, foldername.c_str());
+			//shadowMeshCollection[i - 1] = meshCollection[i - 1];
+			shadowMeshCollection[i - 1] = CommonMesh::LoadFromXFile(Application::s_pApp, foldername.c_str());
 			//^^this is needed since we need to start mesh collection from 0
 		}
 	}
@@ -323,21 +328,30 @@ void Robot::LoadResources(Robot* robotmesh)
 		for (int i = 1; i < skeletonParts.size(); i++)
 		{
 			meshCollection[i - 1] = robotmesh->meshCollection[i - 1];
+			meshCollection[i - 1] = robotmesh->shadowMeshCollection[i - 1];
 		}
 	}
 
 }
 
+//XMFLOAT4 Robot::GetRootPosition() {
+//
+//}
+
+void Robot::ChangeMeshToShadow(CommonApp::Shader& shader)
+{
+	for (int i = 0; i < shadowMeshCollection.size(); i++)
+	{
+		shadowMeshCollection[i]->SetShaderForAllSubsets(&shader);
+	}
+}
+
 void Robot::ReleaseResources(void)
 {
-	/*for (int i = 1; i < skeletonParts.size(); i++)
-	{
-	skeletonParts[i].ReleaseResource();
-	}*/
-
 	for (int i = 0; i < meshCollection.size(); i++)
 	{
 		delete meshCollection[i];
+		delete shadowMeshCollection[i];
 	}
 }
 
@@ -348,6 +362,17 @@ void Robot::DrawAll(void)
 	{
 		Application::s_pApp->SetWorldMatrix(skeletonParts[i].GetWorldMatrix());
 		meshCollection[i - 1]->Draw();
+	}
+
+}
+
+void Robot::DrawShadow(void)
+{
+
+	for (int i = 1; i < skeletonParts.size(); i++)
+	{
+		Application::s_pApp->SetWorldMatrix(skeletonParts[i].GetWorldMatrix());
+		shadowMeshCollection[i - 1]->Draw();
 	}
 
 }

@@ -139,6 +139,9 @@ bool Application::HandleStart()
 	if (!m_pAeroplaneShadowMeshes)
 		return false;
 
+	//Change the shadow mesh collection to whatever
+	m_pRobot->ChangeMeshToShadow(m_drawShadowCasterShader);
+
 	m_pAeroplaneShadowMeshes->pBulletMesh->SetShaderForAllSubsets(&m_drawShadowCasterShader);
 	m_pAeroplaneShadowMeshes->pGunMesh->SetShaderForAllSubsets(&m_drawShadowCasterShader);
 	m_pAeroplaneShadowMeshes->pPlaneMesh->SetShaderForAllSubsets(&m_drawShadowCasterShader);
