@@ -22,6 +22,8 @@ public:
 
 	void SetWorldPosition(float wposX, float wposY, float wposZ, float wposW, float wrotX, float wrotY, float wrotZ, float wrotW);
 	void LoadResources(Robot* robotmesh);
+	XMFLOAT4 GetWorldPosition();
+	XMFLOAT4 GetRootPosition();
 	void ChangeMeshToShadow(CommonApp::Shader& shader);
 	void ReleaseResources(void);
 	void UpdateMatrices(void);

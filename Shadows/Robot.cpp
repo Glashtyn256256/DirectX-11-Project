@@ -334,8 +334,18 @@ void Robot::LoadResources(Robot* robotmesh)
 
 }
 
+XMFLOAT4 Robot::GetWorldPosition() {
+	return m_v4WorldPosition;
+}
+
 //XMFLOAT4 Robot::GetRootPosition() {
-//
+//	XMVECTOR test1, test2;
+//	test1 = XMLoadFloat4(&skeletonParts[0].GetOffsetPosition());
+//	test2 = XMLoadFloat4(&m_v4WorldPosition);
+//	test2 = XMVectorAdd(test1, test2);
+//	XMFLOAT4 returnValue;
+//	XMStoreFloat4(&returnValue, test2);
+//	return returnValue;
 //}
 
 void Robot::ChangeMeshToShadow(CommonApp::Shader& shader)

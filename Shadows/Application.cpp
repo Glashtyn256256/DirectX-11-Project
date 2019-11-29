@@ -13,10 +13,14 @@ const int CAMERA_GUN = 2;
 const int CAMERA_LIGHT = 3;
 const int CAMERA_MAX = 4;
 
-static const int RENDER_TARGET_WIDTH = 512;
-static const int RENDER_TARGET_HEIGHT = 512;
+//static const int RENDER_TARGET_WIDTH = 512;
+//static const int RENDER_TARGET_HEIGHT = 512;
 
-static const float AEROPLANE_RADIUS = 6.f;
+static const int RENDER_TARGET_WIDTH = 1024;
+static const int RENDER_TARGET_HEIGHT = 1024;
+
+static const float AEROPLANE_RADIUS = 6.0f;
+static const float ROBOT_RADIUS = 50.f;
 
 //////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////
@@ -52,7 +56,7 @@ bool Application::HandleStart()
 
 	m_pRenderTargetDebugDisplayBuffer = NULL;
 
-	m_shadowCastingLightPosition = XMFLOAT3(4.0f, 200.f, 0.f);
+	m_shadowCastingLightPosition = XMFLOAT3(4.0f, 200.f, 100.f);
 	m_shadowColour = XMFLOAT4(0.f, 0.f, 0.f, .25f);
 
 	m_pShadowSamplerState = NULL;
@@ -123,7 +127,8 @@ bool Application::HandleStart()
 	m_pHeightMap = new HeightMap( "Resources/heightmap.bmp", 2.0f, &m_drawHeightMapShader );
 	m_pAeroplane = new Aeroplane( 0.0f, 3.5f, 0.0f, 105.0f );
 
-	m_pRobot = new Robot("hierarchy.txt", 0.0f, 2.4f, -20.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f);
+	//m_pRobot = new Robot("hierarchy.txt", 0.0f, 2.4f, -20.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f);
+	m_pRobot = new Robot("hierarchy.txt", 0.0f, 2.4f, 0.0f, 0.0f, 0.0f, 90.0f, 00.0f, 0.0f);
 	m_pRobot->LoadResources(m_pRobot);
 
 	m_pAeroplaneDefaultMeshes = AeroplaneMeshes::Load();
@@ -318,7 +323,9 @@ void Application::RenderShadow()
 	D3D11_VIEWPORT viewport = {0.f, 0.f, RENDER_TARGET_WIDTH, RENDER_TARGET_HEIGHT, 0.f, 1.f};
 	m_pD3DDeviceContext->RSSetViewports(1, &viewport);
 
-	XMFLOAT4 vTemp = m_pAeroplane->GetPosition();
+	//XMFLOAT4 vTemp = m_pAeroplane->GetPosition();
+	//XMFLOAT4 vTemp = { 0.0f,0.0f,0.0f, 0.0f };
+	XMFLOAT4 vTemp =m_pRobot->GetWorldPosition();
 	XMVECTOR vPlanePos = XMLoadFloat4(&vTemp);
 
 	//*************************************************************************
@@ -334,9 +341,13 @@ void Application::RenderShadow()
 		pow(vTemp.y - m_shadowCastingLightPosition.y, 2) + 
 		pow(vTemp.z - m_shadowCastingLightPosition.z, 2)); //pythagoras REMEMBER  THE CAMERA ON THE SLIDES IS THE LIGHTSOURCE.
 	
-	float fovy = atan(AEROPLANE_RADIUS/distanceToPlane)* 2; //Sohcahtoa
-	float zn = distanceToPlane - AEROPLANE_RADIUS;
-	float zf = distanceToPlane + AEROPLANE_RADIUS;
+	//float fovy = atan(AEROPLANE_RADIUS/distanceToPlane)* 2; //Sohcahtoa
+	//float zn = distanceToPlane - AEROPLANE_RADIUS;
+	//float zf = distanceToPlane + AEROPLANE_RADIUS;
+	
+	float fovy = atan(ROBOT_RADIUS/distanceToPlane)* 2; //Sohcahtoa
+	float zn = distanceToPlane - ROBOT_RADIUS;
+	float zf = distanceToPlane + ROBOT_RADIUS;
 	//float aspect = RENDER_TARGET_WIDTH/ RENDER_TARGET_HEIGHT;
 	// You will find the following constants (defined above) useful:
 	// RENDER_TARGET_WIDTH, RENDER_TARGET_HEIGHT, AEROPLANE_RADIUS
@@ -365,7 +376,8 @@ void Application::RenderShadow()
 	this->SetDepthStencilState(true);
 	this->SetRasterizerState(false, false);
 	
-	m_pAeroplane->Draw(m_pAeroplaneShadowMeshes);
+	//m_pAeroplane->Draw(m_pAeroplaneShadowMeshes);
+	m_pRobot->DrawShadow();
 
 	this->SetDefaultRenderTarget();
 }
@@ -506,8 +518,8 @@ void Application::Render2D()
 	this->SetBlendState(false);
 
 	//If we chnage the m_pRenderTargetDebugDisplayBuffer to null that map in bottom left goes.
-	this->DrawTextured(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP, NULL, NULL, 4, m_pRenderTargetColourTextureView, this->GetSamplerState());
-	//this->DrawTextured(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP, m_pRenderTargetDebugDisplayBuffer, NULL, 4, m_pRenderTargetColourTextureView, this->GetSamplerState());
+	//this->DrawTextured(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP, NULL, NULL, 4, m_pRenderTargetColourTextureView, this->GetSamplerState());
+	this->DrawTextured(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP, m_pRenderTargetDebugDisplayBuffer, NULL, 4, m_pRenderTargetColourTextureView, this->GetSamplerState());
 }
 
 //////////////////////////////////////////////////////////////////////////
