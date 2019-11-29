@@ -98,7 +98,7 @@ Aeroplane::GunBullet::GunBullet(XMMATRIX bulletworldposition)
 	mScale = XMMatrixScalingFromVector(XMLoadFloat4(&bulletScale));
 	bulletWorldPosition = mScale * mTran * bulletworldposition;
 	survivalTime = 0.0f;
-	speedBullet = 0.000000000001f;
+	speedBullet = 4.0f;
 }
 
 void Aeroplane::UpdateMatrices( void )
@@ -246,10 +246,10 @@ void Aeroplane::Update( bool bPlayerControl )
 	}
 
 	// Apply a forward thrust and limit to a maximum speed of 1
-	//m_fSpeed += 0.001f;
+	m_fSpeed += 0.001f;
 
-	//if (m_fSpeed > 1)
-		//m_fSpeed = 1;
+	if (m_fSpeed > 1)
+		m_fSpeed = 1;
 	
 	if (bulletContainer.size() > 0)
 	{
