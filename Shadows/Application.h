@@ -15,6 +15,8 @@
 class Aeroplane;
 class AeroplaneMeshes;
 class HeightMap;
+class Robot;
+class Skeleton;
 
 static const char* const g_aTextureFileNames[] = {
 	"Resources/Moss.dds",
@@ -68,6 +70,8 @@ private:
 	Aeroplane* m_pAeroplane;
 	AeroplaneMeshes *m_pAeroplaneDefaultMeshes;
 	AeroplaneMeshes *m_pAeroplaneShadowMeshes;
+
+	Robot* m_pRobot;
 
 	HeightMap* m_pHeightMap;
 

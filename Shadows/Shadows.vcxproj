@@ -86,8 +86,13 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Aeroplane.cpp" />
+    <ClCompile Include="AnimationDataDae.cpp" />
     <ClCompile Include="Application.cpp" />
     <ClCompile Include="HeightMap.cpp" />
+    <ClCompile Include="Robot.cpp" />
+    <ClCompile Include="Skeleton.cpp" />
+    <ClCompile Include="tinyxml2.cpp" />
+    <ClCompile Include="Transform.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Shared\Shared.vcxproj">
@@ -96,8 +101,13 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Aeroplane.h" />
+    <ClInclude Include="AnimationDataDae.h" />
     <ClInclude Include="Application.h" />
     <ClInclude Include="HeightMap.h" />
+    <ClInclude Include="Robot.h" />
+    <ClInclude Include="Skeleton.h" />
+    <ClInclude Include="tinyxml2.h" />
+    <ClInclude Include="Transform.h" />
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="DrawHeightMap.hlsl">

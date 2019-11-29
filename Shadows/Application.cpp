@@ -1,6 +1,8 @@
 #include "Application.h"
 #include "HeightMap.h"
 #include "Aeroplane.h"
+#include "Robot.h"
+
 
 Application* Application::s_pApp = NULL;
 
@@ -50,7 +52,7 @@ bool Application::HandleStart()
 
 	m_pRenderTargetDebugDisplayBuffer = NULL;
 
-	m_shadowCastingLightPosition = XMFLOAT3(4.0f, 10.f, 0.f);
+	m_shadowCastingLightPosition = XMFLOAT3(4.0f, 200.f, 0.f);
 	m_shadowColour = XMFLOAT4(0.f, 0.f, 0.f, .25f);
 
 	m_pShadowSamplerState = NULL;
@@ -121,6 +123,9 @@ bool Application::HandleStart()
 	m_pHeightMap = new HeightMap( "Resources/heightmap.bmp", 2.0f, &m_drawHeightMapShader );
 	m_pAeroplane = new Aeroplane( 0.0f, 3.5f, 0.0f, 105.0f );
 
+	m_pRobot = new Robot("hierarchy.txt", 0.0f, 2.4f, -20.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f);
+	m_pRobot->LoadResources(m_pRobot);
+
 	m_pAeroplaneDefaultMeshes = AeroplaneMeshes::Load();
 	if (!m_pAeroplaneDefaultMeshes)
 		return false;
@@ -134,10 +139,12 @@ bool Application::HandleStart()
 	if (!m_pAeroplaneShadowMeshes)
 		return false;
 
+	m_pAeroplaneShadowMeshes->pBulletMesh->SetShaderForAllSubsets(&m_drawShadowCasterShader);
 	m_pAeroplaneShadowMeshes->pGunMesh->SetShaderForAllSubsets(&m_drawShadowCasterShader);
 	m_pAeroplaneShadowMeshes->pPlaneMesh->SetShaderForAllSubsets(&m_drawShadowCasterShader);
 	m_pAeroplaneShadowMeshes->pPropMesh->SetShaderForAllSubsets(&m_drawShadowCasterShader);
 	m_pAeroplaneShadowMeshes->pTurretMesh->SetShaderForAllSubsets(&m_drawShadowCasterShader);
+	
 
 	m_cameraZ = 50.0f;
 	m_rotationAngle = 0.f;
@@ -176,6 +183,9 @@ void Application::HandleStop()
 	delete m_pAeroplane;
 	delete m_pAeroplaneDefaultMeshes;
 	delete m_pAeroplaneShadowMeshes;
+
+	m_pRobot->ReleaseResources();
+	delete m_pRobot;
 
 	m_drawShadowCasterShader.Reset();
 
@@ -275,7 +285,7 @@ void Application::HandleUpdate()
 
 	
 	m_pAeroplane->Update( m_cameraState != CAMERA_MAP );
-
+	m_pRobot->Update();
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -465,6 +475,7 @@ void Application::Render3D()
 	}
 
 	m_pAeroplane->Draw(m_pAeroplaneDefaultMeshes);
+	m_pRobot->DrawAll();
 	
 	XMMATRIX worldMtx = XMMatrixTranslation(m_shadowCastingLightPosition.x,  m_shadowCastingLightPosition.y,  m_shadowCastingLightPosition.z);
 	this->SetWorldMatrix(worldMtx);

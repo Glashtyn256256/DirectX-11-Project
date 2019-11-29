@@ -23,6 +23,7 @@ public:
 	CommonMesh*	pPropMesh;
 	CommonMesh*	pTurretMesh;
 	CommonMesh*	pGunMesh;
+	CommonMesh*	pBulletMesh;
 
 	~AeroplaneMeshes();
 
@@ -80,6 +81,23 @@ __declspec(align(16)) class Aeroplane
 		XMMATRIX m_mCamWorldMatrix;						// Camera's world transformation matrix
 
 		bool m_bGunCam;
+
+		__declspec(align(16)) class GunBullet
+		{
+		public:
+			GunBullet(XMMATRIX bulletworldposition);
+			XMFLOAT4 bulletOffset;
+			XMFLOAT4 bulletRotation;
+			XMFLOAT4 bulletScale;
+			XMMATRIX bulletWorldPosition;
+			float survivalTime;
+			float speedBullet;
+
+		};
+
+		GunBullet* newBullet;
+		std::vector<GunBullet*> bulletContainer;
+		void deleteBullet();
 
 	public:
 
