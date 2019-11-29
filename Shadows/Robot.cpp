@@ -132,6 +132,7 @@ Robot::~Robot(void)
 {
 	delete animationAttack;
 	delete animationIdle;
+	delete animationDeath;
 }
 
 void Robot::UpdateMatrices(void)
