@@ -502,7 +502,9 @@ void Application::Render2D()
 	this->SetRasterizerState(false, false);
 	this->SetBlendState(false);
 
-	this->DrawTextured(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP, m_pRenderTargetDebugDisplayBuffer, NULL, 4, m_pRenderTargetColourTextureView, this->GetSamplerState());
+	//If we chnage the m_pRenderTargetDebugDisplayBuffer to null that map in bottom left goes.
+	this->DrawTextured(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP, NULL, NULL, 4, m_pRenderTargetColourTextureView, this->GetSamplerState());
+	//this->DrawTextured(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP, m_pRenderTargetDebugDisplayBuffer, NULL, 4, m_pRenderTargetColourTextureView, this->GetSamplerState());
 }
 
 //////////////////////////////////////////////////////////////////////////
