@@ -48,6 +48,8 @@ AeroplaneMeshes::~AeroplaneMeshes()
 
 Aeroplane::Aeroplane( float fX, float fY, float fZ, float fRotY )
 {
+	m_mShadowMatrix = XMMatrixIdentity();
+
 	m_mWorldMatrix = XMMatrixIdentity();
 	m_mPropWorldMatrix = XMMatrixIdentity();
 	m_mTurretWorldMatrix = XMMatrixIdentity();
@@ -276,7 +278,15 @@ void Aeroplane::Update( bool bPlayerControl )
 	XMStoreFloat4(&m_v4Pos, vCurrPos);
 }
 
+void Aeroplane::SetShadowMatrix(XMMATRIX shadowmatrix)
+{
+	m_mShadowMatrix = shadowmatrix;
+}
 
+XMMATRIX Aeroplane::GetShadowMatrix()
+{
+	return m_mShadowMatrix;
+}
 
 void Aeroplane::Draw(const AeroplaneMeshes *pMeshes)
 {

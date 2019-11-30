@@ -13,11 +13,11 @@ const int CAMERA_GUN = 2;
 const int CAMERA_LIGHT = 3;
 const int CAMERA_MAX = 4;
 
-//static const int RENDER_TARGET_WIDTH = 512;
-//static const int RENDER_TARGET_HEIGHT = 512;
+static const int RENDER_TARGET_WIDTH = 512;
+static const int RENDER_TARGET_HEIGHT = 512;
 
-static const int RENDER_TARGET_WIDTH = 1024;
-static const int RENDER_TARGET_HEIGHT = 1024;
+//static const int RENDER_TARGET_WIDTH = 1024;
+//static const int RENDER_TARGET_HEIGHT = 1024;
 
 static const float AEROPLANE_RADIUS = 6.0f;
 static const float ROBOT_RADIUS = 50.f;
@@ -99,11 +99,13 @@ bool Application::HandleStart()
 		this->CreateShaderFromCompiledShader(&m_drawHeightMapShader, pVS, &vs, pIL, pPS, &ps);
 
 		vs.FindCBuffer("DrawHeightMap", &m_drawHeightMapShaderVSConstants.slot);
+		vs.FindFloat4x4(m_drawHeightMapShaderVSConstants.slot, "g_robotMatrix", &m_drawHeightMapShaderVSConstants.shadowMatrix);
 		vs.FindFloat4x4(m_drawHeightMapShaderVSConstants.slot, "g_shadowMatrix", &m_drawHeightMapShaderVSConstants.shadowMatrix);
 		vs.FindFloat4(m_drawHeightMapShaderVSConstants.slot, "g_shadowColour", &m_drawHeightMapShaderVSConstants.shadowColour);
 		m_drawHeightMapShaderVSConstants.pCB = CreateBuffer(m_pD3DDevice, vs.GetCBufferSizeBytes(m_drawHeightMapShaderVSConstants.slot), D3D11_USAGE_DYNAMIC, D3D11_BIND_CONSTANT_BUFFER, D3D11_CPU_ACCESS_WRITE, NULL);
 
 		ps.FindCBuffer("DrawHeightMap", &m_drawHeightMapShaderPSConstants.slot);
+		vs.FindFloat4x4(m_drawHeightMapShaderVSConstants.slot, "g_robotMatrix", &m_drawHeightMapShaderVSConstants.shadowMatrix);
 		ps.FindFloat4x4(m_drawHeightMapShaderPSConstants.slot, "g_shadowMatrix", &m_drawHeightMapShaderPSConstants.shadowMatrix);
 		ps.FindFloat4(m_drawHeightMapShaderPSConstants.slot, "g_shadowColour", &m_drawHeightMapShaderPSConstants.shadowColour);
 		m_drawHeightMapShaderPSConstants.pCB = CreateBuffer(m_pD3DDevice, ps.GetCBufferSizeBytes(m_drawHeightMapShaderPSConstants.slot), D3D11_USAGE_DYNAMIC, D3D11_BIND_CONSTANT_BUFFER, D3D11_CPU_ACCESS_WRITE, NULL);
@@ -311,22 +313,10 @@ void Application::HandleRender()
 //////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////
 
-void Application::RenderShadow()
+void Application::AlterViewingFrustrum(XMFLOAT4 position, float radius, int target_width, int target_height)
 {
-	// Only the alpha channel is relevant, but clear the RGB channels to white
-    // so that it's easy to see what's going on.
-	float clearColour[4] = {0.f, 0.f, 0.f, 0.f};
-	m_pD3DDeviceContext->ClearRenderTargetView(m_pRenderTargetColourTargetView, clearColour);
-	m_pD3DDeviceContext->ClearDepthStencilView(m_pRenderTargetDepthStencilTargetView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.f, 0);
-	m_pD3DDeviceContext->OMSetRenderTargets(1, &m_pRenderTargetColourTargetView, m_pRenderTargetDepthStencilTargetView);
-
-	D3D11_VIEWPORT viewport = {0.f, 0.f, RENDER_TARGET_WIDTH, RENDER_TARGET_HEIGHT, 0.f, 1.f};
-	m_pD3DDeviceContext->RSSetViewports(1, &viewport);
-
-	//XMFLOAT4 vTemp = m_pAeroplane->GetPosition();
-	//XMFLOAT4 vTemp = { 0.0f,0.0f,0.0f, 0.0f };
-	XMFLOAT4 vTemp =m_pRobot->GetWorldPosition();
-	XMVECTOR vPlanePos = XMLoadFloat4(&vTemp);
+	XMFLOAT4 vTemp = position;
+	XMVECTOR vPos = XMLoadFloat4(&vTemp);
 
 	//*************************************************************************
 	// Your code to adjust the perspective projection of the light goes here
@@ -335,19 +325,19 @@ void Application::RenderShadow()
 	float zn = 1.0f;
 	float zf = 1000.0f;
 	float aspect = 1.2f;*/
-	float aspect = RENDER_TARGET_WIDTH / RENDER_TARGET_HEIGHT;
+	float aspect = target_width / target_height;
 
-	float distanceToPlane = sqrt(pow(vTemp.x - m_shadowCastingLightPosition.x, 2) + 
-		pow(vTemp.y - m_shadowCastingLightPosition.y, 2) + 
+	float distanceToPlane = sqrt(pow(vTemp.x - m_shadowCastingLightPosition.x, 2) +
+		pow(vTemp.y - m_shadowCastingLightPosition.y, 2) +
 		pow(vTemp.z - m_shadowCastingLightPosition.z, 2)); //pythagoras REMEMBER  THE CAMERA ON THE SLIDES IS THE LIGHTSOURCE.
-	
-	//float fovy = atan(AEROPLANE_RADIUS/distanceToPlane)* 2; //Sohcahtoa
-	//float zn = distanceToPlane - AEROPLANE_RADIUS;
-	//float zf = distanceToPlane + AEROPLANE_RADIUS;
-	
-	float fovy = atan(ROBOT_RADIUS/distanceToPlane)* 2; //Sohcahtoa
-	float zn = distanceToPlane - ROBOT_RADIUS;
-	float zf = distanceToPlane + ROBOT_RADIUS;
+
+														   //float fovy = atan(AEROPLANE_RADIUS/distanceToPlane)* 2; //Sohcahtoa
+														   //float zn = distanceToPlane - AEROPLANE_RADIUS;
+														   //float zf = distanceToPlane + AEROPLANE_RADIUS;
+
+	float fovy = atan(radius / distanceToPlane) * 2; //Sohcahtoa
+	float zn = distanceToPlane - radius;
+	float zf = distanceToPlane + radius;
 	//float aspect = RENDER_TARGET_WIDTH/ RENDER_TARGET_HEIGHT;
 	// You will find the following constants (defined above) useful:
 	// RENDER_TARGET_WIDTH, RENDER_TARGET_HEIGHT, AEROPLANE_RADIUS
@@ -365,10 +355,26 @@ void Application::RenderShadow()
 	this->SetProjectionMatrix(projMtx);
 
 	XMMATRIX viewMtx;
-	viewMtx = XMMatrixLookAtLH(XMLoadFloat3(&m_shadowCastingLightPosition), vPlanePos, XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f) );
+	viewMtx = XMMatrixLookAtLH(XMLoadFloat3(&m_shadowCastingLightPosition), vPos, XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f));
 	this->SetViewMatrix(viewMtx);
 
-	m_shadowMtx = XMMatrixMultiply(viewMtx, projMtx );
+	m_shadowMtx = XMMatrixMultiply(viewMtx, projMtx);
+}
+//////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
+void Application::RenderShadow()
+{
+	// Only the alpha channel is relevant, but clear the RGB channels to white
+    // so that it's easy to see what's going on.
+	float clearColour[4] = {0.f, 0.f, 0.f, 0.f};
+	m_pD3DDeviceContext->ClearRenderTargetView(m_pRenderTargetColourTargetView, clearColour);
+	m_pD3DDeviceContext->ClearDepthStencilView(m_pRenderTargetDepthStencilTargetView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.f, 0);
+	m_pD3DDeviceContext->OMSetRenderTargets(1, &m_pRenderTargetColourTargetView, m_pRenderTargetDepthStencilTargetView);
+
+	D3D11_VIEWPORT viewport = {0.f, 0.f, RENDER_TARGET_WIDTH, RENDER_TARGET_HEIGHT, 0.f, 1.f};
+	m_pD3DDeviceContext->RSSetViewports(1, &viewport);
+
+	AlterViewingFrustrum(m_pRobot->GetWorldPosition(), ROBOT_RADIUS, RENDER_TARGET_WIDTH, RENDER_TARGET_HEIGHT);
 
 	XMMATRIX worldMtx = XMMatrixIdentity();
 	this->SetWorldMatrix(worldMtx);
@@ -376,8 +382,12 @@ void Application::RenderShadow()
 	this->SetDepthStencilState(true);
 	this->SetRasterizerState(false, false);
 	
-	//m_pAeroplane->Draw(m_pAeroplaneShadowMeshes);
+	m_pRobot->SetShadowMatrix(m_shadowMtx);
 	m_pRobot->DrawShadow();
+
+	AlterViewingFrustrum(m_pAeroplane->GetPosition(), AEROPLANE_RADIUS, RENDER_TARGET_WIDTH, RENDER_TARGET_HEIGHT);
+	m_pAeroplane->SetShadowMatrix(m_shadowMtx);
+	m_pAeroplane->Draw(m_pAeroplaneShadowMeshes);
 
 	this->SetDefaultRenderTarget();
 }
@@ -448,8 +458,11 @@ void Application::Render3D()
 		if (!m_drawHeightMapShaderPSConstants.pCB || FAILED(m_pD3DDeviceContext->Map(m_drawHeightMapShaderPSConstants.pCB, 0, D3D11_MAP_WRITE_DISCARD, 0, &psMap)))
 			psMap.pData = NULL;
 
-		SetCBufferFloat4x4(vsMap, m_drawHeightMapShaderVSConstants.shadowMatrix, m_shadowMtx);
-		SetCBufferFloat4x4(psMap, m_drawHeightMapShaderPSConstants.shadowMatrix, m_shadowMtx);
+		SetCBufferFloat4x4(vsMap, m_drawHeightMapShaderVSConstants.shadowMatrix, m_pAeroplane->GetShadowMatrix());
+		SetCBufferFloat4x4(psMap, m_drawHeightMapShaderPSConstants.shadowMatrix, m_pAeroplane->GetShadowMatrix());
+
+		SetCBufferFloat4x4(vsMap, m_drawHeightMapShaderVSConstants.robotMatrix, m_pRobot->GetShadowMatrix());
+		SetCBufferFloat4x4(psMap, m_drawHeightMapShaderPSConstants.robotMatrix, m_pRobot->GetShadowMatrix());
 
 		SetCBufferFloat4(vsMap, m_drawHeightMapShaderVSConstants.shadowColour, m_shadowColour);
 		SetCBufferFloat4(psMap, m_drawHeightMapShaderPSConstants.shadowColour, m_shadowColour);

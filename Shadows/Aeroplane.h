@@ -45,6 +45,8 @@ __declspec(align(16)) class Aeroplane
 		~Aeroplane( void );
 
 		void Update( bool bPlayerControl );		// Player only has control of plane when flag is set
+		void SetShadowMatrix(XMMATRIX shadowmatrix);
+		XMMATRIX GetShadowMatrix();
 		void Draw(const AeroplaneMeshes *pMeshes);
 
 		void SetWorldPosition( float fX, float fY, float fZ );
@@ -81,6 +83,8 @@ __declspec(align(16)) class Aeroplane
 		XMMATRIX m_mCamWorldMatrix;						// Camera's world transformation matrix
 
 		bool m_bGunCam;
+
+		XMMATRIX m_mShadowMatrix;
 
 		__declspec(align(16)) class GunBullet
 		{

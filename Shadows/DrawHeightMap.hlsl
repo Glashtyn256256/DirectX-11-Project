@@ -59,6 +59,7 @@ float4 GetLightingColour(float3 worldPos, float3 N)
 
 cbuffer DrawHeightMap
 {
+	float4x4 g_robotMatrix;
 	float4x4 g_shadowMatrix;
 	float4 g_shadowColour;
 }

@@ -56,6 +56,7 @@ private:
 	{
 		ID3D11Buffer *pCB;
 		int slot;
+		int robotMatrix;
 		int shadowMatrix;
 		int shadowColour;
 	};
@@ -101,6 +102,8 @@ private:
 	int m_sampler;
 
 	bool CreateRenderTarget();
+
+	void AlterViewingFrustrum(XMFLOAT4 position, float radius, int target_width, int target_height);
 
 	void RenderShadow();
 	void Render3D();

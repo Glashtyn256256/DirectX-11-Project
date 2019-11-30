@@ -32,6 +32,10 @@ public:
 	void DrawShadow(void);
 	void SetUpMeshes();
 
+	void SetShadowMatrix(XMMATRIX shadowmatrix);
+
+	XMMATRIX GetShadowMatrix();
+
 	void SetUpAnimations(void);
 	
 	
@@ -48,6 +52,7 @@ private:
 	std::vector<CommonMesh*> meshCollection;
 	std::vector<CommonMesh*> shadowMeshCollection;
 	XMMATRIX m_mWorldPosition;
+	XMMATRIX m_mShadowMatrix;
 	Transform transform;
 	int count = 0;
 	float animTime;

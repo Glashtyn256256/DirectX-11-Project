@@ -122,6 +122,17 @@ void Robot::SetUpMeshes()
 	}
 };
 
+void Robot::SetShadowMatrix(XMMATRIX shadowmatrix)
+{
+	m_mShadowMatrix = shadowmatrix;
+}
+
+XMMATRIX Robot::GetShadowMatrix()
+{
+	return m_mShadowMatrix;
+}
+
+
 void Robot::SetUpAnimations(void) {
 	animationAttack = new AnimationDataDae("Resources/Robot/MayaFiles/RobotAttackAnim.dae");
 	animationIdle = new AnimationDataDae("Resources/Robot/MayaFiles/RobotIdleAnim.dae");
