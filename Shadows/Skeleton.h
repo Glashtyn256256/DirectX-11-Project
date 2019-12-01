@@ -26,8 +26,6 @@ public:
 
 	XMMATRIX GetLocalMatrix() { return m_mSkeletonLocalMatrix; }
 	XMMATRIX GetWorldMatrix() { return m_mSkeletonWorldMatrix; }
-	//void LoadResource(std::string foldername); // Only load the resources once for all instances
-	//void ReleaseResource(void); // Only free the resources once for all instances
 	
 	void SetLocalMatrix() {
 		m_mSkeletonLocalMatrix = transform.CalculateLocalMatrix(this->m_v4SkeletonPositionOffset, this->m_v4SkeletonRotation);
@@ -54,6 +52,16 @@ public:
 		m_v4SkeletonPositionOffset.w = w;
 	}
 
+	void SetSkeletonOffsetPosition(XMFLOAT4 pos)
+	{
+		m_v4SkeletonPositionOffset = pos;
+	}
+
+	void SetSkeletonRotationPosition(XMFLOAT4 rot)
+	{
+		m_v4SkeletonRotation = rot;
+	}
+
 	void SetSkeletonRotationPosition(float x, float y, float z, float w)
 	{
 		m_v4SkeletonRotation.x = x;
@@ -61,16 +69,6 @@ public:
 		m_v4SkeletonRotation.z = z;
 		m_v4SkeletonRotation.w = w;
 	}
-
-
-	//void Update(bool bPlayerControl); // Player only has control of plane when flag is set
-	//void Draw(void);
-
-	//CommonMesh* s_pSkeletonBodyPartMesh; //Only need one body party mesh
-	
-	//Transform transform;
-	
-	
 
 private:
 	std::string partName;

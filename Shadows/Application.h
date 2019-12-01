@@ -47,9 +47,9 @@ private:
 	bool m_bWireframe;
 
 	bool slowMotion;
-	float slowMotionDeltaTime;
-	float normalMotionDeltaTime;
-	float deltaTime;
+	float slowMotionTime;
+	float normalMotionTime;
+	float time;
 
 	Shader m_drawShadowCasterShader;
 

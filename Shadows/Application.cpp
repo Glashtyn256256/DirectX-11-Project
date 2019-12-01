@@ -28,9 +28,10 @@ static const float ROBOT_RADIUS = 50.f;
 
 bool Application::HandleStart()
 {
-	slowMotionDeltaTime = 1.0f / 600;
-	normalMotionDeltaTime = 1.0f / 60;
-	deltaTime = normalMotionDeltaTime;
+	//Instead of divding better pefroamnce if we calculate it 1.0f / 600 slowmo and 1.0f / 60 for rnoaml;
+	slowMotionTime = 0.00166666666; //1.0f / 600
+	normalMotionTime = 0.01666666666;// 1.0f / 60; 
+	time = normalMotionTime;
 	this->slowMotion = false;
 
 	s_pApp = this;
@@ -283,7 +284,7 @@ void Application::HandleUpdate()
 		dbC = false;
 	}
 
-	if( m_cameraState != CAMERA_PLANE && m_cameraState != CAMERA_GUN && m_cameraState != CAMERA_ROBOT)
+	if( m_cameraState != CAMERA_PLANE && m_cameraState != CAMERA_GUN)
 	{
 		if( this->IsKeyPressed(VK_LEFT) )
 			m_shadowCastingLightPosition.x+=.5f;
@@ -323,12 +324,12 @@ void Application::HandleUpdate()
 	{
 		if (slowMotion)
 		{
-			deltaTime = slowMotionDeltaTime;
-			this->slowMotion = false;
+			time = slowMotionTime;
+			slowMotion = false;
 		}
 		else
 		{
-			deltaTime = normalMotionDeltaTime;
+			time = normalMotionTime;
 			slowMotion = true;
 		}
 
@@ -337,10 +338,10 @@ void Application::HandleUpdate()
 
 	m_pAeroplane->Update( m_cameraState != CAMERA_MAP );
 
-	m_pRobot->Update(deltaTime);
-	m_pRobot1->Update(deltaTime);
-	m_pRobot2->Update(deltaTime);
-	m_pRobot3->Update(deltaTime);
+	m_pRobot->Update(time);
+	m_pRobot1->Update(time);
+	m_pRobot2->Update(time);
+	m_pRobot3->Update(time);
 
 	if (this->IsKeyPressed(VK_F1))
 	{

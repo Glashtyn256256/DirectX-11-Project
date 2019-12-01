@@ -31,6 +31,7 @@ public:
 	void ReleaseResources(void);
 	void UpdateMatrices(void);
 	void Update(float deltatime);
+	XMFLOAT4 ReturnLerpedPosition(XMFLOAT4 current, XMFLOAT4 previous, float lerptime);
 	void DrawAll(void);
 	void DrawShadow(void);
 
@@ -67,10 +68,12 @@ private:
 	float animTime;
 
 	
-
+	AnimationDataDae* previousAnimation;
 	AnimationDataDae* currentAnimation;
 	AnimationDataDae* animationAttack;
 	AnimationDataDae* animationIdle;
 	AnimationDataDae* animationDeath;
+
+	SkeletonAnimationData* previousData;
 };
 #endif

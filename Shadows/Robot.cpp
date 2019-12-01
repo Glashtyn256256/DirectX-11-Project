@@ -122,7 +122,7 @@ void Robot::UpdateMatrices(void)
 	m_vCamWorldPos = m_mCamWorldMatrix.r[3];
 }
 
-void Robot::Update(float deltatime)
+void Robot::Update(float time)
 {
 	if (Application::s_pApp->IsKeyPressed('D'))
 		m_v4CamOff.z -= 2.0f;
@@ -165,7 +165,7 @@ void Robot::Update(float deltatime)
 		}
 
 		//deltatime
-		animTime += deltatime;
+		
 		for (int i = 0; i < skeletonParts.size(); i++)
 		{
 
@@ -185,34 +185,23 @@ void Robot::Update(float deltatime)
 					if (!(currentTranFrame > test))
 					{
 						float translationEndTime = data->tranTime[currentTranFrame];
-						XMFLOAT4 previousTranslationF4;
+						XMFLOAT4 previousTranslation;
+						XMFLOAT4 currentTranslation;
 
 						if (currentTranFrame == 0)
 						{
-							previousTranslationF4 = bone->GetOffsetPosition();
+							previousTranslation = bone->GetOffsetPosition();
 						}
 						else
 						{
-							previousTranslationF4 = data->translate[currentTranFrame - 1];
+							previousTranslation = data->translate[currentTranFrame - 1];
 						}
 
-						float tX = data->translate[currentTranFrame].x;
-						float tY = data->translate[currentTranFrame].y;
-						float tZ = data->translate[currentTranFrame].z;
-						float tW = data->translate[currentTranFrame].w;
 						if (!(animTime >= translationEndTime))
 						{
 							float tLerp = (animTime - data->previousTranslationTime) / (translationEndTime - data->previousTranslationTime);
-							if (!(std::isinf(tLerp)))
-							{
-								XMVECTOR startTranslation = XMVectorSet(previousTranslationF4.x, previousTranslationF4.y, previousTranslationF4.z, previousTranslationF4.w);
-								XMVECTOR previousTranslation = XMVectorSet(tX, tY, tZ, tW);
-								XMVECTOR newTranslation = XMVectorLerp(startTranslation, previousTranslation, tLerp);
-								XMFLOAT4 newTranslationF4;
-								XMStoreFloat4(&newTranslationF4, newTranslation);
-
-								bone->SetSkeletonOffsetPosition(newTranslationF4.x, newTranslationF4.y, newTranslationF4.z, 0.0f);
-							}
+							currentTranslation = data->translate[currentTranFrame];
+							bone->SetSkeletonOffsetPosition(ReturnLerpedPosition(previousTranslation, currentTranslation, tLerp));
 						}
 						else
 						{
@@ -233,40 +222,25 @@ void Robot::Update(float deltatime)
 					int currentRotFrame = data->rotCurrentFrame;
 					if (!(currentRotFrame > test1))
 					{
-						
+
 						float rotationEndTime = data->rotTime[currentRotFrame];
-						XMFLOAT4 previousRotationF4;
+						XMFLOAT4 previousRotation;
+						XMFLOAT4 currentRotation;
 
 						if (currentRotFrame == 0)
 						{
-							previousRotationF4 = bone->GetRotationPosition();
+							previousRotation = bone->GetRotationPosition();
 						}
 						else
 						{
-							float prX = data->rotX[currentRotFrame - 1];
-							float prY = data->rotY[currentRotFrame - 1];
-							float prZ = data->rotZ[currentRotFrame - 1];
-							previousRotationF4 = XMFLOAT4(prX, prY, prZ, 0.0f);
+							previousRotation = data->rotations[currentRotFrame - 1];
 						}
+
 						if (!(animTime >= rotationEndTime))
 						{
 							float rLerp = (animTime - data->previousRotationTime) / (rotationEndTime - data->previousRotationTime);
-							if (!(std::isinf(rLerp)))
-							{
-								float rX = data->rotX[currentRotFrame];
-								float rY = data->rotY[currentRotFrame];
-								float rZ = data->rotZ[currentRotFrame];
-
-								XMVECTOR startRotation = XMVectorSet(previousRotationF4.x, previousRotationF4.y, previousRotationF4.z, 0.0f);
-								XMVECTOR previousRotation = XMVectorSet(rX, rY, rZ, 0.0f);
-
-
-								XMVECTOR newRotation = XMVectorLerp(startRotation, previousRotation, rLerp);
-								XMFLOAT4 newRotationF4;
-								XMStoreFloat4(&newRotationF4, newRotation);
-
-								bone->SetSkeletonRotationPosition(newRotationF4.x, newRotationF4.y, newRotationF4.z, 0.0f);
-							}
+							currentRotation = data->rotations[currentRotFrame];
+							bone->SetSkeletonRotationPosition(ReturnLerpedPosition(previousRotation, currentRotation, rLerp));
 						}
 
 						if (animTime >= rotationEndTime)
@@ -277,12 +251,11 @@ void Robot::Update(float deltatime)
 							if (currentRotFrame > data->rotTime.size())
 								currentRotFrame = data->rotTime.size();
 						}
-
-
 						data->rotCurrentFrame = currentRotFrame;
 					}
 			}
 		}
+
 
 		if (animTime >= currentAnimation->endTime)
 		{
@@ -290,10 +263,20 @@ void Robot::Update(float deltatime)
 			currentAnimation = nullptr;
 		}
 		count++;
+		animTime += time;
 	}
 	UpdateMatrices();
 }
-
+XMFLOAT4 Robot::ReturnLerpedPosition(XMFLOAT4 previous, XMFLOAT4 current, float lerptime)
+{
+	XMVECTOR previousPosition = XMLoadFloat4(&previous);
+	XMVECTOR currentPosition = XMLoadFloat4(&current);
+	
+	XMVECTOR newPosition = XMVectorLerp(previousPosition, currentPosition, lerptime);
+	XMFLOAT4 m_v4newPosition;
+	XMStoreFloat4(&m_v4newPosition, newPosition);
+	return m_v4newPosition;
+}
 void Robot::LoadResources(Robot* robotmesh)
 {
 	//mesh has root. reason meshcollection is i-1 is due to

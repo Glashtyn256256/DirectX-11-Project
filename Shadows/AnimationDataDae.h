@@ -14,7 +14,7 @@ public:
 	std::vector <float> tranTime;
 	std::vector<XMFLOAT4> translate;
 
-	//
+	std::vector<XMFLOAT4> rotations;
 	std::vector<float> rotTime; 
 	std::vector<float> rotX;
 	std::vector<float> rotY;
