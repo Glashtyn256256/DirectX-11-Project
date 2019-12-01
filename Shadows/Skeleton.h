@@ -12,6 +12,7 @@ public:
 	~Skeleton(void);
 
 	std::string GetPartName(void) { return partName; }
+	std::string GetParentName(void) { return parentName; }
 
 	float GetOffsetXPosition(void) { return m_v4SkeletonPositionOffset.x; }
 	float GetOffsetYPosition(void) { return m_v4SkeletonPositionOffset.y; }
@@ -41,6 +42,10 @@ public:
 		partName = partname;
 	}
 
+	void SetParentName(std::string parentname) {
+		parentName = parentname;
+	}
+
 	void SetSkeletonOffsetPosition(float x, float y, float z, float w)
 	{
 		m_v4SkeletonPositionOffset.x = x;
@@ -68,12 +73,12 @@ public:
 	
 
 private:
-	
+	std::string partName;
+	std::string parentName;
 	XMFLOAT4 m_v4SkeletonRotation; // Euler rotation angles
 	XMFLOAT4 m_v4SkeletonPositionOffset; // offset
 	XMMATRIX m_mSkeletonLocalMatrix = XMMatrixIdentity();
 	XMMATRIX m_mSkeletonWorldMatrix = XMMatrixIdentity();
-	std::string partName;
 	Transform transform;
 	
 

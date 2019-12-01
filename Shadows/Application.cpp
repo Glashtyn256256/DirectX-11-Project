@@ -128,7 +128,8 @@ bool Application::HandleStart()
 	m_pAeroplane = new Aeroplane( 0.0f, 3.5f, 0.0f, 105.0f );
 
 	//m_pRobot = new Robot("hierarchy.txt", 0.0f, 2.4f, -20.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f);
-	m_pRobot = new Robot("hierarchy.txt", 0.0f, 2.4f, 0.0f, 0.0f, 0.0f, 90.0f, 00.0f, 0.0f);
+	//m_pRobot = new Robot("hierarchy.txt", 0.0f, 2.4f, 0.0f, 0.0f, 0.0f, 90.0f, 00.0f, 0.0f);
+	m_pRobot = new Robot("hierarchy.txt", XMFLOAT4(-20.0F, 2.4F, 0.0F, 0.0F), XMFLOAT4(0.0F,90.0F,0.0F,0.0F));
 	m_pRobot->LoadResources(m_pRobot);
 
 	m_pAeroplaneDefaultMeshes = AeroplaneMeshes::Load();
