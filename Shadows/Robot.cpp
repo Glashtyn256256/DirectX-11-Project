@@ -1,13 +1,16 @@
 #include "Robot.h"
 
 
-Robot::Robot(std::string filepath, XMFLOAT4 worldpos, XMFLOAT4 worldrot)
+Robot::Robot(std::string filepath, XMFLOAT4 worldpos, XMFLOAT4 worldrot, XMFLOAT4 camerapos, XMFLOAT4 camerarot)
 {
-	//SetWorldPosition(wPosX, wPosY, wPosZ, wPosW, wRotX, wRotY, wRotZ, wRotW);
 	SetWorldPosition(worldpos, worldrot);
+	SetCameraPosition(camerapos, camerarot);
 	ReadTextFileAndSetUpModel(filepath);
 	SetUpMeshes();
 	SetUpAnimations();
+
+	
+
 }
 
 void Robot::ReadTextFileAndSetUpModel(std::string filepath)
@@ -77,6 +80,14 @@ void Robot::SetUpAnimations(void) {
 	animTime = 0;
 }
 
+void Robot::SetCameraPosition(XMFLOAT4 camerapos, XMFLOAT4 camerarot)
+{
+	m_v4CamOff = camerapos;
+	m_v4CamRot = camerarot;
+	m_vCamWorldPos = XMVectorZero();
+	m_mCamWorldMatrix = XMMatrixIdentity();
+}
+
 Robot::~Robot(void)
 {
 	delete animationAttack;
@@ -106,10 +117,32 @@ void Robot::UpdateMatrices(void)
 			skeletonParts[i]->SetWorldMatrix(skeleton->GetWorldMatrix());
 		}
 	}
+
+	m_mCamWorldMatrix = transform.CalculateWorldMatrix(transform.CalculateLocalMatrix(m_v4CamOff, m_v4CamRot), m_mWorldPosition);
+	m_vCamWorldPos = m_mCamWorldMatrix.r[3];
 }
 
-void Robot::Update()
+void Robot::Update(float deltatime)
 {
+	if (Application::s_pApp->IsKeyPressed('D'))
+		m_v4CamOff.z -= 2.0f;
+
+	if (Application::s_pApp->IsKeyPressed('G'))
+		m_v4CamOff.z += 2.0f;
+
+	if (Application::s_pApp->IsKeyPressed('R'))
+		m_v4CamOff.y -= 2.0f;
+
+	if (Application::s_pApp->IsKeyPressed('F'))
+		m_v4CamOff.y += 2.0f;
+
+	if (Application::s_pApp->IsKeyPressed('T'))
+		m_v4CamOff.x -= 2.0f;
+
+	if (Application::s_pApp->IsKeyPressed('E'))
+		m_v4CamOff.x += 2.0f;
+
+
 	if (Application::s_pApp->IsKeyPressed('1'))
 	{
 		currentAnimation = animationAttack;
@@ -132,7 +165,7 @@ void Robot::Update()
 		}
 
 		//deltatime
-		animTime += 1.0f / 600;
+		animTime += deltatime;
 		for (int i = 0; i < skeletonParts.size(); i++)
 		{
 
@@ -281,7 +314,7 @@ void Robot::LoadResources(Robot* robotmesh)
 		for (int i = 1; i < skeletonParts.size(); i++)
 		{
 			meshCollection[i - 1] = robotmesh->meshCollection[i - 1];
-			meshCollection[i - 1] = robotmesh->shadowMeshCollection[i - 1];
+			shadowMeshCollection[i - 1] = robotmesh->shadowMeshCollection[i - 1];
 		}
 	}
 

@@ -75,6 +75,8 @@ Aeroplane::Aeroplane( float fX, float fY, float fZ, float fRotY )
 	m_fSpeed = 0.0f;
 
 	m_bGunCam = false;
+
+	normalMotionDeltaTime = 1.0 / 60.0f;
 }
 
 Aeroplane::~Aeroplane( void )
@@ -256,7 +258,7 @@ void Aeroplane::Update( bool bPlayerControl )
 		deleteBullet();
 		for (int i = 0; i < bulletContainer.size(); i++)
 		{
-			bulletContainer[i]->survivalTime += 1.0 / 60.0f;
+			bulletContainer[i]->survivalTime += normalMotionDeltaTime;
 			bulletContainer[i]->bulletOffset.z += bulletContainer[i]->speedBullet;// + m_fSpeed;
 		}
 	}

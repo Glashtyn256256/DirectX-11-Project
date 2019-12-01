@@ -94,7 +94,7 @@ __declspec(align(16)) class Aeroplane
 			float speedBullet;
 
 		};
-
+		float normalMotionDeltaTime;
 		GunBullet* newBullet;
 		std::vector<GunBullet*> bulletContainer;
 		void deleteBullet();

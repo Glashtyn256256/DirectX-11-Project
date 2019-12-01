@@ -18,7 +18,7 @@ __declspec(align(16)) class Robot
 {
 public:
 	//Robot(std::string filePath, float wPosX, float wPosY, float wPosZ, float wPosW, float wRotX, float wRotY, float wRotZ, float wRotW);
-	Robot(std::string filePath, XMFLOAT4 worldpos, XMFLOAT4 worldrot);
+	Robot(std::string filePath, XMFLOAT4 worldpos, XMFLOAT4 worldrot, XMFLOAT4 camerapos, XMFLOAT4 camerarot);
 	void ReadTextFileAndSetUpModel(std::string filepath);
 	~Robot(void);
 
@@ -30,15 +30,17 @@ public:
 	void ChangeMeshToShadow(CommonApp::Shader& shader);
 	void ReleaseResources(void);
 	void UpdateMatrices(void);
-	void Update();
+	void Update(float deltatime);
 	void DrawAll(void);
 	void DrawShadow(void);
-	void SetUpMeshes();
 
+	void SetUpMeshes();
 	void SetUpAnimations(void);
+	void SetCameraPosition(XMFLOAT4 camerapos, XMFLOAT4 camerarot);
 	
+	XMFLOAT4 GetFocusPosition() { return m_v4WorldPosition; }
+	XMFLOAT4 GetCameraPosition(){ XMFLOAT4 v4Pos; XMStoreFloat4(&v4Pos, m_vCamWorldPos); return v4Pos; }
 	
-	//void SetWorldPosition(float fX, float fY, float fZ);
 private:
 	Skeleton* skeleton;
 	std::vector<Skeleton*> skeletonParts;
@@ -63,6 +65,8 @@ private:
 	Transform transform;
 	int count = 0;
 	float animTime;
+
+	
 
 	AnimationDataDae* currentAnimation;
 	AnimationDataDae* animationAttack;

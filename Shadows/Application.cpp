@@ -10,8 +10,9 @@ Application* Application::s_pApp = NULL;
 const int CAMERA_MAP = 0;
 const int CAMERA_PLANE = 1;
 const int CAMERA_GUN = 2;
-const int CAMERA_LIGHT = 3;
-const int CAMERA_MAX = 4;
+const int CAMERA_ROBOT = 3;
+const int CAMERA_LIGHT = 4;
+const int CAMERA_MAX = 5;
 
 //static const int RENDER_TARGET_WIDTH = 512;
 //static const int RENDER_TARGET_HEIGHT = 512;
@@ -27,6 +28,11 @@ static const float ROBOT_RADIUS = 50.f;
 
 bool Application::HandleStart()
 {
+	slowMotionDeltaTime = 1.0f / 600;
+	normalMotionDeltaTime = 1.0f / 60;
+	deltaTime = normalMotionDeltaTime;
+	this->slowMotion = false;
+
 	s_pApp = this;
 
 	this->SetWindowTitle("Shadows");
@@ -129,8 +135,27 @@ bool Application::HandleStart()
 
 	//m_pRobot = new Robot("hierarchy.txt", 0.0f, 2.4f, -20.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f);
 	//m_pRobot = new Robot("hierarchy.txt", 0.0f, 2.4f, 0.0f, 0.0f, 0.0f, 90.0f, 00.0f, 0.0f);
-	m_pRobot = new Robot("hierarchy.txt", XMFLOAT4(-20.0F, 2.4F, 0.0F, 0.0F), XMFLOAT4(0.0F,90.0F,0.0F,0.0F));
+	m_pRobot = new Robot("hierarchy.txt", XMFLOAT4(-20.0F, 2.4F, 0.0F, 0.0F),
+		XMFLOAT4(0.0F,90.0F,0.0F,0.0F),
+		XMFLOAT4(2.0f, 41.0f, 51.0f, 0.0f),
+		XMFLOAT4(0.0f, 0.0f, 0.0f, 0.0f));
+	m_pRobot1 = new Robot("hierarchy.txt", XMFLOAT4(0.0F, 2.4F, -20.0F, 0.0F),
+		XMFLOAT4(0.0F, 00.0F, 0.0F, 0.0F),
+		XMFLOAT4(1.0f, 1.0f, 1.0f, 0.0f),
+		XMFLOAT4(0.0f, 0.0f, 0.0f, 0.0f));
+	m_pRobot2 = new Robot("hierarchy.txt", XMFLOAT4(0.0F, 2.4F, 20.0F, 0.0F),
+		XMFLOAT4(0.0F, 180.0F, 0.0F, 0.0F),
+		XMFLOAT4(1.0f, 1.0f, 1.0f, 0.0f),
+		XMFLOAT4(0.0f, 0.0f, 0.0f, 0.0f));
+	m_pRobot3 = new Robot("hierarchy.txt", XMFLOAT4(20.0F, 2.4F, 0.0F, 0.0F),
+		XMFLOAT4(0.0F, 270.0F, 0.0F, 0.0F),
+		XMFLOAT4(1.0f, 1.0f, 1.0f, 0.0f),
+		XMFLOAT4(0.0f, 0.0f, 0.0f, 0.0f));
+
 	m_pRobot->LoadResources(m_pRobot);
+	m_pRobot1->LoadResources(m_pRobot);
+	m_pRobot2->LoadResources(m_pRobot);
+	m_pRobot3->LoadResources(m_pRobot);
 
 	m_pAeroplaneDefaultMeshes = AeroplaneMeshes::Load();
 	if (!m_pAeroplaneDefaultMeshes)
@@ -147,6 +172,10 @@ bool Application::HandleStart()
 
 	//Change the shadow mesh collection to whatever
 	m_pRobot->ChangeMeshToShadow(m_drawShadowCasterShader);
+	m_pRobot1->ChangeMeshToShadow(m_drawShadowCasterShader);
+	m_pRobot2->ChangeMeshToShadow(m_drawShadowCasterShader);
+	m_pRobot3->ChangeMeshToShadow(m_drawShadowCasterShader);
+
 
 	m_pAeroplaneShadowMeshes->pBulletMesh->SetShaderForAllSubsets(&m_drawShadowCasterShader);
 	m_pAeroplaneShadowMeshes->pGunMesh->SetShaderForAllSubsets(&m_drawShadowCasterShader);
@@ -181,9 +210,7 @@ void Application::HandleStop()
 
 	Release(m_pShadowSamplerState);
 //	Release(m_pSamplerState);
-//	Release(m_pTextures[MAX_NUM_LIGHTS]);
-//	Release(m_pTextureViews[MAX_NUM_LIGHTS]);
-//
+
 	Release(m_drawHeightMapShaderVSConstants.pCB);
 	Release(m_drawHeightMapShaderPSConstants.pCB);
 
@@ -256,25 +283,25 @@ void Application::HandleUpdate()
 		dbC = false;
 	}
 
-	if( m_cameraState != CAMERA_PLANE && m_cameraState != CAMERA_GUN )
+	if( m_cameraState != CAMERA_PLANE && m_cameraState != CAMERA_GUN && m_cameraState != CAMERA_ROBOT)
 	{
 		if( this->IsKeyPressed(VK_LEFT) )
-			m_shadowCastingLightPosition.x+=.2f;
+			m_shadowCastingLightPosition.x+=.5f;
 
 		if( this->IsKeyPressed(VK_RIGHT) )
-			m_shadowCastingLightPosition.x-=.2f;
+			m_shadowCastingLightPosition.x-=.5f;
 
 		if( this->IsKeyPressed(VK_UP ) )
-			m_shadowCastingLightPosition.z+=.2f;
+			m_shadowCastingLightPosition.z+=.5f;
 
 		if( this->IsKeyPressed(VK_DOWN ) )
-			m_shadowCastingLightPosition.z-=.2f;
+			m_shadowCastingLightPosition.z-=.5f;
 
 		if( this->IsKeyPressed(VK_PRIOR ) )
-			m_shadowCastingLightPosition.y-=.2f;
+			m_shadowCastingLightPosition.y-=.5f;
 
 		if( this->IsKeyPressed(VK_NEXT ) )
-			m_shadowCastingLightPosition.y+=.2f;
+			m_shadowCastingLightPosition.y+=.5f;
 	}
 
 	static bool dbW = false;
@@ -292,9 +319,37 @@ void Application::HandleUpdate()
 		dbW = false;
 	}
 
+	if (Application::s_pApp->IsKeyPressed('S'))
+	{
+		if (slowMotion)
+		{
+			deltaTime = slowMotionDeltaTime;
+			this->slowMotion = false;
+		}
+		else
+		{
+			deltaTime = normalMotionDeltaTime;
+			slowMotion = true;
+		}
+
+	}
 	
+
 	m_pAeroplane->Update( m_cameraState != CAMERA_MAP );
-	m_pRobot->Update();
+
+	m_pRobot->Update(deltaTime);
+	m_pRobot1->Update(deltaTime);
+	m_pRobot2->Update(deltaTime);
+	m_pRobot3->Update(deltaTime);
+
+	if (this->IsKeyPressed(VK_F1))
+	{
+		m_cameraState = CAMERA_ROBOT;
+	}
+	if (this->IsKeyPressed(VK_F2))
+	{
+		m_cameraState = CAMERA_PLANE;
+	}
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -416,6 +471,12 @@ void Application::Render3D()
 			vCamera = XMLoadFloat4(&vCamPos);
 			vLookat = XMLoadFloat4(&vFocusPos);
 			break;
+		case CAMERA_ROBOT:
+			vCamPos = m_pRobot->GetCameraPosition();
+			vFocusPos = m_pRobot->GetFocusPosition();
+			vCamera = XMLoadFloat4(&vCamPos);
+			vLookat = XMLoadFloat4(&vFocusPos);
+			break;
 		case CAMERA_LIGHT:
 			vCamera = XMLoadFloat3(&m_shadowCastingLightPosition);
 			vLookat = XMLoadFloat4(&vPlanePos);
@@ -491,7 +552,11 @@ void Application::Render3D()
 	}
 
 	m_pAeroplane->Draw(m_pAeroplaneDefaultMeshes);
+
 	m_pRobot->DrawAll();
+	m_pRobot1->DrawAll();
+	m_pRobot2->DrawAll();
+	m_pRobot3->DrawAll();
 	
 	XMMATRIX worldMtx = XMMatrixTranslation(m_shadowCastingLightPosition.x,  m_shadowCastingLightPosition.y,  m_shadowCastingLightPosition.z);
 	this->SetWorldMatrix(worldMtx);

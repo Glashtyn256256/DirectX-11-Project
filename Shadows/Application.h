@@ -46,6 +46,11 @@ private:
 	float m_cameraZ;
 	bool m_bWireframe;
 
+	bool slowMotion;
+	float slowMotionDeltaTime;
+	float normalMotionDeltaTime;
+	float deltaTime;
+
 	Shader m_drawShadowCasterShader;
 
 	Shader m_drawHeightMapShader;
@@ -72,6 +77,9 @@ private:
 	AeroplaneMeshes *m_pAeroplaneShadowMeshes;
 
 	Robot* m_pRobot;
+	Robot* m_pRobot1;
+	Robot* m_pRobot2;
+	Robot* m_pRobot3;
 
 	HeightMap* m_pHeightMap;
 
