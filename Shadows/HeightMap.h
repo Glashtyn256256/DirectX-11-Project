@@ -19,9 +19,18 @@ public:
 	~HeightMap();
 
 	void Draw(ID3D11SamplerState* samplerstate);
+	bool RayCollision(XMVECTOR & rayPos, XMVECTOR rayDir, float raySpeed, XMVECTOR & colPos, XMVECTOR & colNormN);
 
 private:
 	bool LoadHeightMap(char* filename, float gridSize);
+
+	bool PointOverQuad(XMVECTOR & vPos, XMVECTOR & v0, XMVECTOR & v1, XMVECTOR & v2);
+
+	
+
+	bool RayTriangle(const XMVECTOR & vert0, const XMVECTOR & vert1, const XMVECTOR & vert2, const XMVECTOR & rayPos, const XMVECTOR & rayDir, XMVECTOR & colPos, XMVECTOR & colNormN, float & colDist);
+
+	bool PointPlane(const XMVECTOR & vert0, const XMVECTOR & vert1, const XMVECTOR & vert2, const XMVECTOR & pointPos);
 
 	ID3D11Buffer *m_pHeightMapBuffer;
 
