@@ -18,6 +18,7 @@ AeroplaneMeshes *AeroplaneMeshes::Load()
 	pMeshes->pTurretMesh = CommonMesh::LoadFromXFile(Application::s_pApp, "Resources/Plane/turret.x");
 	pMeshes->pGunMesh = CommonMesh::LoadFromXFile(Application::s_pApp, "Resources/Plane/gun.x");
 	pMeshes->pBulletMesh = CommonMesh::LoadFromXFile(Application::s_pApp, "Resources/Plane/bullet.x");
+	pMeshes->pBombMesh = pMeshes->pBulletMesh;
 
 	if (!pMeshes->pPlaneMesh || !pMeshes->pPropMesh || !pMeshes->pTurretMesh || !pMeshes->pGunMesh)
 	{
@@ -33,7 +34,8 @@ pPlaneMesh(NULL),
 pPropMesh(NULL),
 pTurretMesh(NULL),
 pGunMesh(NULL),
-pBulletMesh(NULL)
+pBulletMesh(NULL),
+pBombMesh(NULL)
 {
 }
 
@@ -43,7 +45,8 @@ AeroplaneMeshes::~AeroplaneMeshes()
 	delete this->pPropMesh;
 	delete this->pTurretMesh;
 	delete this->pGunMesh;
-	delete this->pBulletMesh;
+	delete this->pBulletMesh; //Don't need t delete bombmesh
+
 }
 
 Aeroplane::Aeroplane( float fX, float fY, float fZ, float fRotY )
@@ -77,10 +80,13 @@ Aeroplane::Aeroplane( float fX, float fY, float fZ, float fRotY )
 	m_bGunCam = false;
 
 	normalMotionDeltaTime = 1.0 / 60.0f;
+
+	//SetWorldPosition(fX, fY, fZ);
 }
 
 Aeroplane::~Aeroplane( void )
 {
+	delete newBomb;
 }
 
 void Aeroplane::SetWorldPosition( float fX, float fY, float fZ  )
@@ -103,6 +109,24 @@ Aeroplane::GunBullet::GunBullet(XMMATRIX bulletworldposition)
 	speedBullet = 4.0f;
 }
 
+Aeroplane::Bomb::Bomb(XMMATRIX bombworldposition)
+{
+
+	XMMATRIX  mScale, mTran;
+	bombOffset = { 0.0f ,-2.0f ,0.0f ,0.0f };
+	bombRotation = { 0.0f,0.0f,0.0f,0.0f };
+	bombScale = {0.8f,0.8f,0.8f,0.0 };
+	bombVelocity = { 0.0f,0.0f,0.0f,0.0f };
+
+	//mTran = XMMatrixTranslationFromVector(XMLoadFloat4(&bombOffset));
+	mScale = XMMatrixScalingFromVector(XMLoadFloat4(&bombScale));
+	bombWorldPosition =  mScale * bombworldposition;
+}
+
+//XMVECTOR Aeroplane::GetForwardVector() {
+//	return m_vForwardVector * m_fSpeed;
+//
+//}
 void Aeroplane::UpdateMatrices( void )
 {
 	XMMATRIX mRotX, mRotY, mRotZ, mTrans;
@@ -178,6 +202,11 @@ void Aeroplane::UpdateMatrices( void )
 			bulletContainer[i]->bulletWorldPosition = mTrans * bulletContainer[i]->bulletWorldPosition;
 		}
 	}
+	if (bombDropped)
+	{
+		//mTrans = XMMatrixTranslationFromVector(XMLoadFloat4(&newBomb->bombOffset));
+		//newBomb->bombWorldPosition = mTrans * newBomb->bombWorldPosition;
+	}
 }
 
 void Aeroplane::deleteBullet()
@@ -247,6 +276,21 @@ void Aeroplane::Update( bool bPlayerControl )
 		bulletContainer.push_back(newBullet);
 	}
 
+	static bool dbT = false;
+	if (Application::s_pApp->IsKeyPressed('B'))
+	{
+		if (dbT == false && bombDropped == false)
+		{
+			dbT = true;
+			bombDropped = true;
+			newBomb = new Bomb(m_mWorldMatrix);
+		}
+	}
+	else
+	{
+		dbT = false;
+	}
+
 	// Apply a forward thrust and limit to a maximum speed of 1
 	m_fSpeed += 0.001f;
 
@@ -262,7 +306,11 @@ void Aeroplane::Update( bool bPlayerControl )
 			bulletContainer[i]->bulletOffset.z += bulletContainer[i]->speedBullet;// + m_fSpeed;
 		}
 	}
-
+	if (bombDropped)
+	{
+	//	newBomb->bombOffset.z += 2.0f;
+	}
+	
 	// Rotate propellor and turret
 	m_v4PropRot.z += 100 * m_fSpeed;
 	//m_v4TurretRot.y += 0.1f;
@@ -299,6 +347,12 @@ void Aeroplane::Draw(const AeroplaneMeshes *pMeshes)
 		Application::s_pApp->SetWorldMatrix(bulletContainer[i]->bulletWorldPosition);
 		pMeshes->pBulletMesh->Draw();
 	}
+	if (bombDropped)
+	{
+		Application::s_pApp->SetWorldMatrix(newBomb->bombWorldPosition);
+		pMeshes->pBombMesh->Draw();
+	}
+	
 }
 
 

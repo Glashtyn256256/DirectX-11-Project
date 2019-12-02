@@ -24,6 +24,7 @@ public:
 	CommonMesh*	pTurretMesh;
 	CommonMesh*	pGunMesh;
 	CommonMesh*	pBulletMesh;
+	CommonMesh* pBombMesh;
 
 	~AeroplaneMeshes();
 
@@ -46,6 +47,7 @@ __declspec(align(16)) class Aeroplane
 
 		void Update( bool bPlayerControl );		// Player only has control of plane when flag is set
 		void Draw(const AeroplaneMeshes *pMeshes);
+		XMVECTOR GetForwardVector();
 
 		void SetWorldPosition( float fX, float fY, float fZ );
 
@@ -98,6 +100,23 @@ __declspec(align(16)) class Aeroplane
 		GunBullet* newBullet;
 		std::vector<GunBullet*> bulletContainer;
 		void deleteBullet();
+
+		__declspec(align(16)) class Bomb
+		{
+		public:
+			Bomb(XMMATRIX bulletworldposition);
+			XMFLOAT4 bombOffset;
+			XMFLOAT4 bombRotation;
+			XMFLOAT4 bombScale;
+			XMMATRIX bombWorldPosition;
+
+			XMFLOAT4 bombVelocity;
+			XMFLOAT4 bombGravityAcceleration;
+
+		};
+		bool bombDropped;
+		bool mSphereCollided;
+		Bomb* newBomb;
 
 	public:
 

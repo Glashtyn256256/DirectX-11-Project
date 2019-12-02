@@ -352,7 +352,7 @@ void Application::HandleUpdate()
 			static int dx = 0;
 			static int dy = 0;
 			mSpherePos = XMFLOAT3(mSpherePos.x, mSpherePos.y, mSpherePos.z);
-			mSphereVel = XMFLOAT3(0.0f, 0.2f, 0.0f);
+			mSphereVel = XMFLOAT3(0.0f, 0.1f, 0.0f);
 			mGravityAcc = XMFLOAT3(0.0f, -0.05f, 0.0f);
 			mSphereCollided = false;
 			dbT = true;
@@ -377,11 +377,6 @@ void Application::HandleUpdate()
 
 		XMStoreFloat3(&mSphereVel, vSVel);
 		XMStoreFloat3(&mSpherePos, vSPos);
-		
-		//XMFLOAT3 lowPos = mSpherePos;
-		//lowPos.y = (lowPos.y - 1.0f);
-		//XMVECTOR lowVec = XMLoadFloat3(&lowPos);
-
 
 
 		mSphereSpeed = XMVectorGetX(XMVector3Length(vSVel));
@@ -390,13 +385,25 @@ void Application::HandleUpdate()
 
 		if (mSphereCollided)
 		{
-			mSphereVel = XMFLOAT3(0.0f, 0.0f, 0.0f);
-			XMStoreFloat3(&mSpherePos, vSColPos);
+			
+			//mSphereVel = XMFLOAT3(0.0f, 0.0f, 0.0f);
+			mSphereVel.y = -mSphereVel.y * 0.8f;
 			mSpherePos.y = mSpherePos.y + 1.0f;
+			mSphereCollided = false;
+
+
 		}
 	}
 
 	m_pAeroplane->Update( m_cameraState != CAMERA_MAP );
+	/*static float slow = 101.0;
+	++slow;
+	if (slow > 100)
+	{
+	
+
+		slow = 0;
+	}*/
 
 	m_pRobot->Update(time);
 	m_pRobot1->Update(time);
