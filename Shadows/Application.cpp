@@ -131,6 +131,12 @@ bool Application::HandleStart()
 
 	m_bWireframe = false;
 
+	m_pSphereMesh = CommonMesh::NewSphereMesh(this, 1.0f, 16, 16);
+	mSpherePos = XMFLOAT3(0.0F, 30.4F, 0.0F);
+	mSphereVel = XMFLOAT3(0.0f, 0.0f, 0.0f);
+	mGravityAcc = XMFLOAT3(0.0f, 0.0f, 0.0f);
+	mSphereCollided = false;
+
 	m_pHeightMap = new HeightMap( "Resources/heightmap.bmp", 2.0f, &m_drawHeightMapShader );
 	m_pAeroplane = new Aeroplane( 0.0f, 3.5f, 0.0f, 105.0f );
 
@@ -211,6 +217,9 @@ void Application::HandleStop()
 
 	Release(m_pShadowSamplerState);
 //	Release(m_pSamplerState);
+
+	if (m_pSphereMesh)
+		delete m_pSphereMesh;
 
 	Release(m_drawHeightMapShaderVSConstants.pCB);
 	Release(m_drawHeightMapShaderPSConstants.pCB);
@@ -335,6 +344,57 @@ void Application::HandleUpdate()
 
 	}
 	
+	static bool dbT = false;
+	if (this->IsKeyPressed('T'))
+	{
+		if (dbT == false)
+		{
+			static int dx = 0;
+			static int dy = 0;
+			mSpherePos = XMFLOAT3(mSpherePos.x, mSpherePos.y, mSpherePos.z);
+			mSphereVel = XMFLOAT3(0.0f, 0.2f, 0.0f);
+			mGravityAcc = XMFLOAT3(0.0f, -0.05f, 0.0f);
+			mSphereCollided = false;
+			dbT = true;
+		}
+	}
+	else
+	{
+		dbT = false;
+	}
+
+	XMVECTOR vSColPos, vSColNorm;
+
+	if (!mSphereCollided)
+	{
+		XMVECTOR vSPos = XMLoadFloat3(&mSpherePos);
+		XMVECTOR vSVel = XMLoadFloat3(&mSphereVel);
+		XMVECTOR vSAcc = XMLoadFloat3(&mGravityAcc);
+
+		vSPos += vSVel; // Really important that we add LAST FRAME'S velocity as this was how fast the collision is expecting the ball to move
+		vSVel += vSAcc; // The new velocity gets passed through to the collision so it can base its predictions on our speed NEXT FRAME
+
+
+		XMStoreFloat3(&mSphereVel, vSVel);
+		XMStoreFloat3(&mSpherePos, vSPos);
+		
+		//XMFLOAT3 lowPos = mSpherePos;
+		//lowPos.y = (lowPos.y - 1.0f);
+		//XMVECTOR lowVec = XMLoadFloat3(&lowPos);
+
+
+
+		mSphereSpeed = XMVectorGetX(XMVector3Length(vSVel));
+
+		mSphereCollided = m_pHeightMap->RayCollision(vSPos, vSVel, mSphereSpeed, vSColPos, vSColNorm);
+
+		if (mSphereCollided)
+		{
+			mSphereVel = XMFLOAT3(0.0f, 0.0f, 0.0f);
+			XMStoreFloat3(&mSpherePos, vSColPos);
+			mSpherePos.y = mSpherePos.y + 1.0f;
+		}
+	}
 
 	m_pAeroplane->Update( m_cameraState != CAMERA_MAP );
 
@@ -427,6 +487,8 @@ void Application::RenderShadow()
 
 	m_shadowMtx = XMMatrixMultiply(viewMtx, projMtx );
 
+
+
 	XMMATRIX worldMtx = XMMatrixIdentity();
 	this->SetWorldMatrix(worldMtx);
 
@@ -479,7 +541,7 @@ void Application::Render3D()
 			vLookat = XMLoadFloat4(&vFocusPos);
 			break;
 		case CAMERA_LIGHT:
-			vCamera = XMLoadFloat3(&m_shadowCastingLightPosition);
+			vCamera = XMLoadFloat3(&mSpherePos);
 			vLookat = XMLoadFloat4(&vPlanePos);
 			break;
 			
@@ -559,6 +621,15 @@ void Application::Render3D()
 	m_pRobot2->DrawAll();
 	m_pRobot3->DrawAll();
 	
+	XMMATRIX worldMtxx;
+
+	worldMtxx = XMMatrixTranslation(mSpherePos.x, mSpherePos.y, mSpherePos.z);
+
+	this->SetWorldMatrix(worldMtxx);
+	SetDepthStencilState(true, true);
+	if (m_pSphereMesh)
+		m_pSphereMesh->Draw();
+
 	XMMATRIX worldMtx = XMMatrixTranslation(m_shadowCastingLightPosition.x,  m_shadowCastingLightPosition.y,  m_shadowCastingLightPosition.z);
 	this->SetWorldMatrix(worldMtx);
 	m_pShadowCastingLightMesh->Draw();

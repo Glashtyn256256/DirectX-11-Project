@@ -113,6 +113,13 @@ private:
 	void RenderShadow();
 	void Render3D();
 	void Render2D();
+
+	CommonMesh *m_pSphereMesh;
+	XMFLOAT3 mSpherePos;
+	XMFLOAT3 mSphereVel;
+	float mSphereSpeed;
+	bool mSphereCollided;
+	XMFLOAT3 mGravityAcc;
 };
 
 #endif

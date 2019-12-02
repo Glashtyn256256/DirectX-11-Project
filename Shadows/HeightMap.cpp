@@ -460,87 +460,72 @@ bool HeightMap::LoadHeightMap(char* filename, float gridSize )
 	return true;
 }
 
-//bool HeightMap::PointOverQuad(XMVECTOR& vPos, XMVECTOR& v0, XMVECTOR& v1, XMVECTOR& v2)
-//{
-//	if (XMVectorGetX(vPos) < max(XMVectorGetX(v1), XMVectorGetX(v2)) && XMVectorGetX(vPos) > min(XMVectorGetX(v1), XMVectorGetX(v2)))
-//		if (XMVectorGetZ(vPos) < max(XMVectorGetZ(v1), XMVectorGetZ(v2)) && XMVectorGetZ(vPos) > min(XMVectorGetZ(v1), XMVectorGetZ(v2)))
-//			return true;
-//
-//	return false;
-//}
-//
-//int g_badIndex = 0;
-//
-//bool HeightMap::RayCollision(XMVECTOR& rayPos, XMVECTOR rayDir, float raySpeed, XMVECTOR& colPos, XMVECTOR& colNormN)
-//{
-//
-//	XMVECTOR v0, v1, v2, v3;
-//	int i0, i1, i2, i3;
-//	float colDist = 0.0f;
-//
-//	// This is a brute force solution that checks against every triangle in the heightmap
-//	for (int l = 0; l < m_HeightMapLength - 1; ++l)
-//	{
-//		for (int w = 0; w < m_HeightMapWidth - 1; ++w)
-//		{
-//			int mapIndex = (l*m_HeightMapWidth) + w;
-//
-//			i0 = mapIndex;
-//			i1 = mapIndex + m_HeightMapWidth;
-//			i2 = mapIndex + 1;
-//			i3 = mapIndex + m_HeightMapWidth + 1;
-//
-//			v0 = XMLoadFloat3(&m_pHeightMap[i0]);
-//			v1 = XMLoadFloat3(&m_pHeightMap[i1]);
-//			v2 = XMLoadFloat3(&m_pHeightMap[i2]);
-//			v3 = XMLoadFloat3(&m_pHeightMap[i3]);
-//
-//			//bool bOverQuad = PointOverQuad(rayPos, v0, v1, v2);
-//
-//			//if (mapIndex == g_badIndex)
-//			//	bOverQuad = bOverQuad;
-//
-//			//012 213
-//			if (RayTriangle(v0, v1, v2, rayPos, rayDir, colPos, colNormN, colDist))
-//			{
-//				// Needs to be >=0 
-//				if (colDist <= raySpeed && colDist >= 0.0f)
-//				{
-//
-//
-//					return true;
-//				}
-//
-//			}
-//			// 213
-//			if (RayTriangle(v2, v1, v3, rayPos, rayDir, colPos, colNormN, colDist))
-//			{
-//				// Needs to be >=0 
-//				if (colDist <= raySpeed && colDist >= 0.0f)
-//				{
-//
-//					return true;
-//				}
-//			}
-//
-//			/*
-//			if (bOverQuad)
-//			{
-//				m_pHeightMap[i0].w = 1;
-//				m_pHeightMap[i2].w = 1;
-//				m_pHeightMap[i1].w = 1;
-//				m_pHeightMap[i3].w = 1;
-//				RebuildVertexData();
-//				g_badIndex = mapIndex;
-//			}
-//			*/
-//
-//		}
-//
-//	}
-//
-//	return false;
-//}
+bool HeightMap::PointOverQuad(XMVECTOR& vPos, XMVECTOR& v0, XMVECTOR& v1, XMVECTOR& v2)
+{
+	if (XMVectorGetX(vPos) < max(XMVectorGetX(v1), XMVectorGetX(v2)) && XMVectorGetX(vPos) > min(XMVectorGetX(v1), XMVectorGetX(v2)))
+		if (XMVectorGetZ(vPos) < max(XMVectorGetZ(v1), XMVectorGetZ(v2)) && XMVectorGetZ(vPos) > min(XMVectorGetZ(v1), XMVectorGetZ(v2)))
+			return true;
+
+	return false;
+}
+
+int g_badIndex = 0;
+
+bool HeightMap::RayCollision(XMVECTOR& rayPos, XMVECTOR rayDir, float raySpeed, XMVECTOR& colPos, XMVECTOR& colNormN)
+{
+
+	XMVECTOR v0, v1, v2, v3;
+	int i0, i1, i2, i3;
+	float colDist = 0.0f;
+
+	// This is a brute force solution that checks against every triangle in the heightmap
+	for (int l = 0; l < m_HeightMapLength - 1; ++l)
+	{
+		for (int w = 0; w < m_HeightMapWidth - 1; ++w)
+		{
+			int mapIndex = (l*m_HeightMapWidth) + w;
+
+			i0 = mapIndex;
+			i1 = mapIndex + m_HeightMapWidth;
+			i2 = mapIndex + 1;
+			i3 = mapIndex + m_HeightMapWidth + 1;
+
+			v0 = XMLoadFloat3(&m_pHeightMap[i0]);
+			v1 = XMLoadFloat3(&m_pHeightMap[i1]);
+			v2 = XMLoadFloat3(&m_pHeightMap[i2]);
+			v3 = XMLoadFloat3(&m_pHeightMap[i3]);
+
+			//bool bOverQuad = PointOverQuad(rayPos, v0, v1, v2);
+
+			//if (mapIndex == g_badIndex)
+			//	bOverQuad = bOverQuad;
+
+			//012 213
+			if (RayTriangle(v0, v2, v1, rayPos, rayDir, colPos, colNormN, colDist))
+			{
+				// Needs to be >=0 
+				if (colDist <= raySpeed && colDist >= 0.0f)
+				{
+					return true;
+				}
+
+			}
+			// 213
+			if (RayTriangle(v1, v0, v3, rayPos, rayDir, colPos, colNormN, colDist))
+			{
+				// Needs to be >=0 
+				if (colDist <= raySpeed && colDist >= 0.0f)
+				{
+					return true;
+				}
+			}
+
+		}
+
+	}
+
+	return false;
+}
 
 
 // Function:	rayTriangle
@@ -621,7 +606,6 @@ bool HeightMap::RayTriangle(const XMVECTOR& vert0, const XMVECTOR& vert1, const 
 	 // Then COLPOS with the plane will be RAYPOS + COLDIST*|RAYDIR| //normalised when two lines
 	colPos = rayPos + COLDIST * XMVector4Normalize(rayDir);
 	// ...
-
 	// Next two lines are useful debug code to stop collision with anywhere beneath the pyramid. 
    // if( min(vert0.m128_f32[1],vert1.m128_f32[1],vert2.m128_f32[1])>colPos.m128_f32[1]) return false;
 	// Remember to remove it once you have implemented part 2 below...
