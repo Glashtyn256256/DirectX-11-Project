@@ -351,6 +351,7 @@ void Application::HandleUpdate()
 		{
 			static int dx = 0;
 			static int dy = 0;
+			int numberOfBounces = 0;
 			mSpherePos = XMFLOAT3(mSpherePos.x, mSpherePos.y, mSpherePos.z);
 			mSphereVel = XMFLOAT3(0.0f, 0.1f, 0.0f);
 			mGravityAcc = XMFLOAT3(0.0f, -0.05f, 0.0f);
@@ -385,12 +386,15 @@ void Application::HandleUpdate()
 
 		if (mSphereCollided)
 		{
-			
+		//	numberOfBounces++;
 			//mSphereVel = XMFLOAT3(0.0f, 0.0f, 0.0f);
 			mSphereVel.y = -mSphereVel.y * 0.8f;
 			mSpherePos.y = mSpherePos.y + 1.0f;
 			mSphereCollided = false;
-
+			/*if (numberOfBounces > BOUNCE_LIMIT)
+			{
+				mSphereVel = XMFLOAT3(0.0f, 0.0f, 0.0f);
+			}*/
 
 		}
 	}

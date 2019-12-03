@@ -119,6 +119,8 @@ private:
 	XMFLOAT3 mSphereVel;
 	float mSphereSpeed;
 	bool mSphereCollided;
+	const int BOUNCE_LIMIT = 3;
+	int numberOfBounces;
 	XMFLOAT3 mGravityAcc;
 };
 
