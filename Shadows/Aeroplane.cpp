@@ -118,11 +118,11 @@ Bomb::Bomb(XMMATRIX bombworldposition)
 	bombOffset = { 0.0f ,-2.0f ,0.0f ,0.0f };
 	bombRotation = { 0.0f,0.0f,0.0f,0.0f };
 	bombScale = {0.8f,0.8f,0.8f,0.0 };
-	bombVelocity = { 0.0f,0.0f,0.0f,0.0f };
-
+	bombVelocity = { 0.0f,0.1f,0.0f,0.0f };
+	bombGravity = { 0.0f,-0.05f,0.0f,0.0f };
 	//mTran = XMMatrixTranslationFromVector(XMLoadFloat4(&bombOffset));
-	mScale = XMMatrixScalingFromVector(XMLoadFloat4(&bombScale));
-	bombWorldPosition =  mScale * bombworldposition;
+	//mScale = XMMatrixScalingFromVector(XMLoadFloat4(&bombScale));
+	bombWorldPosition =  bombworldposition;
 }
 
 //XMVECTOR Aeroplane::GetForwardVector() {
@@ -206,8 +206,9 @@ void Aeroplane::UpdateMatrices( void )
 	}
 	if (bombDropped)
 	{
-		//mTrans = XMMatrixTranslationFromVector(XMLoadFloat4(&newBomb->bombOffset));
-		//newBomb->bombWorldPosition = mTrans * newBomb->bombWorldPosition;
+		mTrans = XMMatrixTranslationFromVector(XMLoadFloat4(&newBomb->GetBombOffset()));
+		XMMATRIX bombWorldMatrix = mTrans * newBomb->GetBombWorldMatrix();
+		newBomb->SetBombWorldMatrix(bombWorldMatrix);
 	}
 }
 
@@ -310,7 +311,39 @@ void Aeroplane::Update( bool bPlayerControl )
 	}
 	if (bombDropped)
 	{
-	//	newBomb->bombOffset.z += 2.0f;
+		XMVECTOR vSColPos, vSColNorm;
+		if (!bombCollided)
+		{
+			XMVECTOR vSPos = XMLoadFloat4(&newBomb->GetBombOffset());
+			XMVECTOR vSVel = XMLoadFloat4(&newBomb->GetBombVelocity());
+			XMVECTOR vSAcc = XMLoadFloat4(&newBomb->GetBombGravity());
+
+			vSPos += vSVel; // Really important that we add LAST FRAME'S velocity as this was how fast the collision is expecting the ball to move
+			vSVel += vSAcc; // The new velocity gets passed through to the collision so it can base its predictions on our speed NEXT FRAME
+
+			newBomb->SetBombVelocity(vSVel);
+			newBomb->SetBombOffset(vSPos);
+
+
+
+			mBombSpeed = XMVectorGetX(XMVector3Length(vSVel));
+
+			bombCollided = Application::s_pApp->HasCollided(vSPos, vSVel, mBombSpeed, vSColPos, vSColNorm);
+
+			if(bombCollided)
+			{
+				//	numberOfBounces++;
+				//mSphereVel = XMFLOAT3(0.0f, 0.0f, 0.0f);
+				newBomb->InvertVelocityY(0.8f);
+			//	mSpherePos.y = mSpherePos.y + 1.0f;
+				bombCollided = true;
+				/*if (numberOfBounces > BOUNCE_LIMIT)
+				{
+				mSphereVel = XMFLOAT3(0.0f, 0.0f, 0.0f);
+				}*/
+
+			}
+		}
 	}
 	
 	// Rotate propellor and turret

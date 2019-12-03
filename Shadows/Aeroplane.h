@@ -178,7 +178,7 @@ __declspec(align(16)) class Aeroplane
 		Bomb* newBomb;
 		bool bombDropped;
 		bool bombCollided;
-		
+		float mBombSpeed;
 
 	public:
 

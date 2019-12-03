@@ -33,13 +33,14 @@ class Application : public CommonApp
 {
 public:
 	static Application* s_pApp;
-
+	bool HasCollided(XMVECTOR raypos, XMVECTOR raydir, float rayspeed, XMVECTOR colpos, XMVECTOR colnorm);
 protected:
 	bool HandleStart();
 	void HandleStop();
 	void HandleUpdate();
 	void HandleRender();
 
+	
 private:
 	float m_rotationAngle;
 	float m_rotationSpeed;
@@ -109,6 +110,8 @@ private:
 	int m_sampler;
 
 	bool CreateRenderTarget();
+
+	
 
 	void RenderShadow();
 	void Render3D();
