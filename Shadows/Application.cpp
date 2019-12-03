@@ -398,9 +398,12 @@ void Application::HandleUpdate()
 			{
 			
 				numberOfBounces++;
+				vSVel ;
 				XMStoreFloat4(&mSphereVel, XMVector4Reflect(vSVel, vSColNorm)); //basically allows us to bounce off a wall into the correct direction
 				//mSphereVel = XMVector4Reflect(vSVel, vSColNorm);//mSphereVel.y * 0.8f;
-				mSphereVel.y = mSphereVel.y * 0.8f;
+				mSphereVel.x = mSphereVel.x * 0.7f;
+				mSphereVel.y = mSphereVel.y * 0.7f;
+				mSphereVel.z = mSphereVel.z * 0.7f;
 				mSpherePos.y = mSpherePos.y + 1.0f;
 				mSphereCollided = false;
 				if (numberOfBounces > BOUNCE_LIMIT)
