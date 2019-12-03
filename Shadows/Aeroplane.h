@@ -14,6 +14,69 @@
 
 // Holds meshes needed for drawing the aeroplane so that there can be more than one set (used for shadows)
 
+__declspec(align(16)) class Bomb
+{
+public:
+	Bomb(XMMATRIX bulletworldposition);
+
+	void SetBombOffset(XMFLOAT4 bomboffset) 
+	{
+		bombOffset = bomboffset;
+	}
+	void SetBombVelocity(XMFLOAT4 bombvelocity)
+	{
+		bombVelocity = bombvelocity;
+	}
+	void SetBombGravity(XMFLOAT4 bombgravity)
+	{
+		bombGravity = bombgravity;
+	}
+
+
+	void SetBombOffset(XMVECTOR bomboffset)
+	{
+		XMStoreFloat4(&bombOffset, bomboffset);
+	}
+	void SetBombVelocity(XMVECTOR bombvelocity)
+	{
+		XMStoreFloat4(&bombVelocity, bombvelocity);
+	}
+	void SetBombGravity(XMVECTOR bombgravity)
+	{
+		XMStoreFloat4(&bombGravity, bombgravity);
+	}
+
+	void InvertVelocityY(float bounceForce) 
+	{
+		bombVelocity.y = -bombVelocity.y * bounceForce;
+	}
+
+	void SetBombWorldMatrix(XMMATRIX newbombmatrix) {
+		bombWorldPosition = newbombmatrix;
+	}
+
+	XMFLOAT4 GetBombOffset(){ return bombOffset; }
+	XMFLOAT4 GetBombVelocity() { return bombVelocity; }
+	XMFLOAT4 GetBombGravity() { return bombGravity; }
+	XMMATRIX GetBombWorldMatrix() { return bombWorldPosition; }
+
+
+	
+
+private:
+	XMFLOAT4 bombOffset;
+	XMFLOAT4 bombRotation;
+	XMFLOAT4 bombScale;
+	XMMATRIX bombWorldPosition;
+
+	XMFLOAT4 bombVelocity;
+	XMFLOAT4 bombGravity;
+
+
+
+};
+
+
 class AeroplaneMeshes
 {
 public:
@@ -45,10 +108,19 @@ __declspec(align(16)) class Aeroplane
 		Aeroplane( float fX = 0.0f, float fY = 0.0f, float fZ = 0.0f, float fRotY = 0.0f );
 		~Aeroplane( void );
 
-		void Update( bool bPlayerControl );		// Player only has control of plane when flag is set
+		void Update( bool bPlayerControl, HeightMap *heightmap );		// Player only has control of plane when flag is set
 		void Draw(const AeroplaneMeshes *pMeshes);
 		XMVECTOR GetForwardVector();
 
+		XMFLOAT4 GetWorldPositonFromMatrix() 
+		{
+			XMVECTOR test1 = m_mWorldMatrix.r[3];
+			XMFLOAT4 test;
+			XMStoreFloat4(&test, test1);
+			return test;
+		};
+		Bomb* GetBombPointer() { return newBomb; }
+		bool HasBombDropped() { return bombDropped; }
 		void SetWorldPosition( float fX, float fY, float fZ );
 
 	private:
@@ -84,6 +156,7 @@ __declspec(align(16)) class Aeroplane
 
 		bool m_bGunCam;
 
+
 		__declspec(align(16)) class GunBullet
 		{
 		public:
@@ -101,22 +174,10 @@ __declspec(align(16)) class Aeroplane
 		std::vector<GunBullet*> bulletContainer;
 		void deleteBullet();
 
-		__declspec(align(16)) class Bomb
-		{
-		public:
-			Bomb(XMMATRIX bulletworldposition);
-			XMFLOAT4 bombOffset;
-			XMFLOAT4 bombRotation;
-			XMFLOAT4 bombScale;
-			XMMATRIX bombWorldPosition;
-
-			XMFLOAT4 bombVelocity;
-			XMFLOAT4 bombGravityAcceleration;
-
-		};
-		bool bombDropped;
-		bool mSphereCollided;
 		Bomb* newBomb;
+		bool bombDropped;
+		bool bombCollided;
+		
 
 	public:
 
@@ -125,6 +186,7 @@ __declspec(align(16)) class Aeroplane
 		float GetZPosition(void) { return m_v4Pos.z; }
 		XMFLOAT4 GetFocusPosition(void) { return GetPosition(); }
 		XMFLOAT4 GetCameraPosition(void) { XMFLOAT4 v4Pos; XMStoreFloat4(&v4Pos, m_vCamWorldPos); return v4Pos; }
+
 		XMFLOAT4 GetPosition(void) { return m_v4Pos; }
 		void SetGunCamera( bool value ) { m_bGunCam = value; }
 
