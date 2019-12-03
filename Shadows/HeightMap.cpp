@@ -501,7 +501,7 @@ bool HeightMap::RayCollision(XMVECTOR& rayPos, XMVECTOR rayDir, float raySpeed, 
 			//	bOverQuad = bOverQuad;
 
 			//012 213
-			if (RayTriangle(v0, v2, v1, rayPos, rayDir, colPos, colNormN, colDist))
+			if (RayTriangle(v0, v1, v2, rayPos, rayDir, colPos, colNormN, colDist))
 			{
 				// Needs to be >=0 
 				if (colDist <= raySpeed && colDist >= 0.0f)
@@ -511,7 +511,7 @@ bool HeightMap::RayCollision(XMVECTOR& rayPos, XMVECTOR rayDir, float raySpeed, 
 
 			}
 			// 213
-			if (RayTriangle(v1, v0, v3, rayPos, rayDir, colPos, colNormN, colDist))
+			if (RayTriangle(v2, v1, v3, rayPos, rayDir, colPos, colNormN, colDist))
 			{
 				// Needs to be >=0 
 				if (colDist <= raySpeed && colDist >= 0.0f)
@@ -624,14 +624,14 @@ bool HeightMap::RayTriangle(const XMVECTOR& vert0, const XMVECTOR& vert1, const 
 
 	 // Step 1: Test against plane 1 and return false if behind plane
 	 //if (!PointPlane(rayPosition, vert0, vert1, colPos))
-	if (!PointPlane(rayPosition, vert1, vert0, colPos))
+	if (!PointPlane(rayPosition, vert0, vert1, colPos))
 	{
 		return false;
 	}
 	// ...
 
 	// Step 2: Test against plane 2 and return false if behind plane
-	if (!PointPlane(rayPosition, vert2, vert1, colPos))
+	if (!PointPlane(rayPosition, vert1, vert2, colPos))
 		//if (!PointPlane(rayPosition, vert2, vert1, colPos))
 		//if (!PointPlane(vert1,vert2 , rayPosition, colPos)) //same as original top
 		//if (!PointPlane(vert2, vert1, rayPosition, colPos)) //broke
@@ -641,7 +641,7 @@ bool HeightMap::RayTriangle(const XMVECTOR& vert0, const XMVECTOR& vert1, const 
 		return false;
 	}
 
-	if (!PointPlane(rayPosition, vert0, vert2, colPos))
+	if (!PointPlane(rayPosition, vert2, vert0, colPos))
 		//if (!PointPlane(rayPosition, vert0, vert2, colPos))
 		//if (!PointPlane(vert0,vert2 , rayPosition, colPos))
 		//if (!PointPlane(vert2, vert0, rayPosition, colPos))

@@ -33,7 +33,6 @@ class Application : public CommonApp
 {
 public:
 	static Application* s_pApp;
-	bool HasCollided(XMVECTOR raypos, XMVECTOR raydir, float rayspeed, XMVECTOR colpos, XMVECTOR colnorm);
 protected:
 	bool HandleStart();
 	void HandleStop();

@@ -11,8 +11,9 @@ const int CAMERA_MAP = 0;
 const int CAMERA_PLANE = 1;
 const int CAMERA_GUN = 2;
 const int CAMERA_ROBOT = 3;
-const int CAMERA_LIGHT = 4;
-const int CAMERA_MAX = 5;
+const int CAMERA_BOMB = 4;
+const int CAMERA_LIGHT = 5;
+const int CAMERA_MAX = 6;
 
 //static const int RENDER_TARGET_WIDTH = 512;
 //static const int RENDER_TARGET_HEIGHT = 512;
@@ -131,7 +132,7 @@ bool Application::HandleStart()
 
 	m_bWireframe = false;
 
-	m_pSphereMesh = CommonMesh::NewSphereMesh(this, 0.8f, 16, 16);
+	m_pSphereMesh = CommonMesh::NewSphereMesh(this, 1.0f, 16, 16);
 	/*mSpherePos = XMFLOAT4(0.0F, 30.4F, 0.0F, 0.0f);
 	mSphereVel = XMFLOAT4(0.0f, 0.0f, 0.0f, 0.0f);
 	mGravityAcc = XMFLOAT4(0.0f, 0.0f, 0.0f, 0.0f);
@@ -330,29 +331,35 @@ void Application::HandleUpdate()
 		dbW = false;
 	}
 
+	static bool dbS = false;
 	if (Application::s_pApp->IsKeyPressed('S'))
 	{
 		if (slowMotion)
 		{
-			time = slowMotionTime;
+			//time = slowMotionTime;
 			slowMotion = false;
 		}
 		else
 		{
-			time = normalMotionTime;
+			//time = normalMotionTime;
 			slowMotion = true;
 		}
 
 	}
+	else
+	{
+		dbS = false;
+	}
 	
 	static bool dbT = false;
-	if (this->IsKeyPressed('T'))
+	if (this->IsKeyPressed('B'))
 	{
 		if (dbT == false)
 		{
 			static int dx = 0;
 			static int dy = 0;
 			numberOfBounces = 0;
+			m_cameraState = CAMERA_BOMB;
 			mSpherePos = m_pAeroplane->GetWorldPositonFromMatrix();
 			mSphereVel = m_pAeroplane->GetForwardVector();
 			mGravityAcc = XMFLOAT4(0.0f, -0.05f, 0.0f, 0.0f);
@@ -389,9 +396,11 @@ void Application::HandleUpdate()
 
 			if (mSphereCollided)
 			{
+			
 				numberOfBounces++;
-				//mSphereVel = XMFLOAT3(0.0f, 0.0f, 0.0f);
-				mSphereVel.y = -mSphereVel.y * 0.8f;
+				XMStoreFloat4(&mSphereVel, XMVector4Reflect(vSVel, vSColNorm)); //basically allows us to bounce off a wall into the correct direction
+				//mSphereVel = XMVector4Reflect(vSVel, vSColNorm);//mSphereVel.y * 0.8f;
+				mSphereVel.y = mSphereVel.y * 0.8f;
 				mSpherePos.y = mSpherePos.y + 1.0f;
 				mSphereCollided = false;
 				if (numberOfBounces > BOUNCE_LIMIT)
@@ -413,10 +422,29 @@ void Application::HandleUpdate()
 		slow = 0;
 	}*/
 
-	m_pRobot->Update(time);
-	m_pRobot1->Update(time);
-	m_pRobot2->Update(time);
-	m_pRobot3->Update(time);
+	static float slow;
+	if (slowMotion == true)
+	{
+		slow += time;
+		if (slow > 1)
+		{
+			m_pRobot->Update(time);
+			m_pRobot1->Update(time);
+			m_pRobot2->Update(time);
+			m_pRobot3->Update(time);
+
+			slow = 0;
+		}
+		
+	}
+	else
+	{
+		m_pRobot->Update(time);
+		m_pRobot1->Update(time);
+		m_pRobot2->Update(time);
+		m_pRobot3->Update(time);
+	}
+	
 
 	if (this->IsKeyPressed(VK_F1))
 	{
@@ -554,6 +582,10 @@ void Application::Render3D()
 			vFocusPos = m_pRobot->GetFocusPosition();
 			vCamera = XMLoadFloat4(&vCamPos);
 			vLookat = XMLoadFloat4(&vFocusPos);
+			break;
+		case CAMERA_BOMB:
+			vCamera = XMLoadFloat4(&vCamPos);
+			vLookat = XMLoadFloat4(&mSpherePos);
 			break;
 		case CAMERA_LIGHT:
 			vCamera = XMLoadFloat4(&mSpherePos);
@@ -817,13 +849,8 @@ bool Application::CreateRenderTarget()
 
 	return true;
 }
-//////////////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////////////
-bool Application::HasCollided(XMVECTOR raypos, XMVECTOR raydir, float rayspeed, XMVECTOR colpos, XMVECTOR colnorm)
-{
 
-	return m_pHeightMap->RayCollision(raypos, raydir, rayspeed, colpos, colnorm);
-}
+
 //////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////
 
