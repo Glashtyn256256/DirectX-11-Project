@@ -108,7 +108,8 @@ __declspec(align(16)) class Aeroplane
 		Aeroplane( float fX = 0.0f, float fY = 0.0f, float fZ = 0.0f, float fRotY = 0.0f );
 		~Aeroplane( void );
 
-		void Update( bool bPlayerControl, HeightMap *heightmap );		// Player only has control of plane when flag is set
+		//void Update( bool bPlayerControl, HeightMap *heightmap );		// Player only has control of plane when flag is set
+		void Update( bool bPlayerControl);		// Player only has control of plane when flag is set
 		void Draw(const AeroplaneMeshes *pMeshes);
 		XMVECTOR GetForwardVector();
 

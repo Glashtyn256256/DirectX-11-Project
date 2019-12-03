@@ -18,7 +18,7 @@ AeroplaneMeshes *AeroplaneMeshes::Load()
 	pMeshes->pTurretMesh = CommonMesh::LoadFromXFile(Application::s_pApp, "Resources/Plane/turret.x");
 	pMeshes->pGunMesh = CommonMesh::LoadFromXFile(Application::s_pApp, "Resources/Plane/gun.x");
 	pMeshes->pBulletMesh = CommonMesh::LoadFromXFile(Application::s_pApp, "Resources/Plane/bullet.x");
-	pMeshes->pBombMesh = pMeshes->pBulletMesh;
+	pMeshes->pBombMesh = CommonMesh::LoadFromXFile(Application::s_pApp, "Resources/Plane/bomb.x");
 
 	if (!pMeshes->pPlaneMesh || !pMeshes->pPropMesh || !pMeshes->pTurretMesh || !pMeshes->pGunMesh)
 	{
@@ -82,6 +82,8 @@ Aeroplane::Aeroplane( float fX, float fY, float fZ, float fRotY )
 	normalMotionDeltaTime = 1.0 / 60.0f;
 
 	//SetWorldPosition(fX, fY, fZ);
+	bombCollided = false;
+	bombDropped = false;	
 }
 
 Aeroplane::~Aeroplane( void )
@@ -109,7 +111,7 @@ Aeroplane::GunBullet::GunBullet(XMMATRIX bulletworldposition)
 	speedBullet = 4.0f;
 }
 
-Aeroplane::Bomb::Bomb(XMMATRIX bombworldposition)
+Bomb::Bomb(XMMATRIX bombworldposition)
 {
 
 	XMMATRIX  mScale, mTran;
@@ -349,7 +351,7 @@ void Aeroplane::Draw(const AeroplaneMeshes *pMeshes)
 	}
 	if (bombDropped)
 	{
-		Application::s_pApp->SetWorldMatrix(newBomb->bombWorldPosition);
+		Application::s_pApp->SetWorldMatrix(newBomb->GetBombWorldMatrix());
 		pMeshes->pBombMesh->Draw();
 	}
 	
