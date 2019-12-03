@@ -18,7 +18,7 @@ AeroplaneMeshes *AeroplaneMeshes::Load()
 	pMeshes->pTurretMesh = CommonMesh::LoadFromXFile(Application::s_pApp, "Resources/Plane/turret.x");
 	pMeshes->pGunMesh = CommonMesh::LoadFromXFile(Application::s_pApp, "Resources/Plane/gun.x");
 	pMeshes->pBulletMesh = CommonMesh::LoadFromXFile(Application::s_pApp, "Resources/Plane/bullet.x");
-	pMeshes->pBombMesh = CommonMesh::LoadFromXFile(Application::s_pApp, "Resources/Plane/bomb.x");
+	//pMeshes->pBombMesh = CommonMesh::LoadFromXFile(Application::s_pApp, "Resources/Plane/bomb.x");
 
 	if (!pMeshes->pPlaneMesh || !pMeshes->pPropMesh || !pMeshes->pTurretMesh || !pMeshes->pGunMesh)
 	{
@@ -34,8 +34,7 @@ pPlaneMesh(NULL),
 pPropMesh(NULL),
 pTurretMesh(NULL),
 pGunMesh(NULL),
-pBulletMesh(NULL),
-pBombMesh(NULL)
+pBulletMesh(NULL)
 {
 }
 
@@ -45,7 +44,7 @@ AeroplaneMeshes::~AeroplaneMeshes()
 	delete this->pPropMesh;
 	delete this->pTurretMesh;
 	delete this->pGunMesh;
-	delete this->pBulletMesh; //Don't need t delete bombmesh
+	delete this->pBulletMesh;
 
 }
 
@@ -81,14 +80,12 @@ Aeroplane::Aeroplane( float fX, float fY, float fZ, float fRotY )
 
 	normalMotionDeltaTime = 1.0 / 60.0f;
 
-	//SetWorldPosition(fX, fY, fZ);
-	bombCollided = false;
-	bombDropped = false;	
+		
+	forwardVectorOff = false;
 }
 
 Aeroplane::~Aeroplane( void )
 {
-	delete newBomb;
 }
 
 void Aeroplane::SetWorldPosition( float fX, float fY, float fZ  )
@@ -111,19 +108,19 @@ Aeroplane::GunBullet::GunBullet(XMMATRIX bulletworldposition)
 	speedBullet = 4.0f;
 }
 
-Bomb::Bomb(XMMATRIX bombworldposition)
-{
-
-	XMMATRIX  mScale, mTran;
-	bombOffset = { 0.0f ,-2.0f ,0.0f ,0.0f };
-	bombRotation = { 0.0f,0.0f,0.0f,0.0f };
-	bombScale = {0.8f,0.8f,0.8f,0.0 };
-	bombVelocity = { 0.0f,0.1f,0.0f,0.0f };
-	bombGravity = { 0.0f,-0.05f,0.0f,0.0f };
-	//mTran = XMMatrixTranslationFromVector(XMLoadFloat4(&bombOffset));
-	//mScale = XMMatrixScalingFromVector(XMLoadFloat4(&bombScale));
-	bombWorldPosition =  bombworldposition;
-}
+//Bomb::Bomb(XMMATRIX bombworldposition)
+//{
+//
+//	XMMATRIX  mScale, mTran;
+//	bombOffset = { 0.0f ,-2.0f ,0.0f ,0.0f };
+//	//bombRotation = { 0.0f,0.0f,0.0f,0.0f };
+//	bombScale = {0.8f,0.8f,0.8f,0.0 };
+//	bombVelocity = { 0.1f,0.1f,0.0f,0.0f };
+//	bombGravity = { 0.0f,-0.05f,0.0f,0.0f };
+//	//mTran = XMMatrixTranslationFromVector(XMLoadFloat4(&bombOffset));
+//	//mScale = XMMatrixScalingFromVector(XMLoadFloat4(&bombScale));
+//	bombWorldPosition =  bombworldposition;
+//}
 
 //XMVECTOR Aeroplane::GetForwardVector() {
 //	return m_vForwardVector * m_fSpeed;
@@ -204,12 +201,12 @@ void Aeroplane::UpdateMatrices( void )
 			bulletContainer[i]->bulletWorldPosition = mTrans * bulletContainer[i]->bulletWorldPosition;
 		}
 	}
-	if (bombDropped)
-	{
-		mTrans = XMMatrixTranslationFromVector(XMLoadFloat4(&newBomb->GetBombOffset()));
-		XMMATRIX bombWorldMatrix = mTrans * newBomb->GetBombWorldMatrix();
-		newBomb->SetBombWorldMatrix(bombWorldMatrix);
-	}
+	//if (bombDropped)
+	//{
+	//	mTrans = XMMatrixTranslationFromVector(XMLoadFloat4(&newBomb->GetBombOffset()));
+	//	XMMATRIX bombWorldMatrix = mTrans * newBomb->GetBombWorldMatrix();
+	//	newBomb->SetBombWorldMatrix(bombWorldMatrix);
+	//}
 }
 
 void Aeroplane::deleteBullet()
@@ -279,19 +276,24 @@ void Aeroplane::Update( bool bPlayerControl )
 		bulletContainer.push_back(newBullet);
 	}
 
-	static bool dbT = false;
-	if (Application::s_pApp->IsKeyPressed('B'))
+	
+	static bool dbM = false;
+	if (Application::s_pApp->IsKeyPressed('M'))
 	{
-		if (dbT == false && bombDropped == false)
+		if (dbM == false)
 		{
-			dbT = true;
-			bombDropped = true;
-			newBomb = new Bomb(m_mWorldMatrix);
+			if (!forwardVectorOff)
+			{
+				forwardVectorOff = true;
+			}
+			else {
+				forwardVectorOff = false;
+			}
 		}
 	}
 	else
 	{
-		dbT = false;
+		dbM = false;
 	}
 
 	// Apply a forward thrust and limit to a maximum speed of 1
@@ -309,42 +311,6 @@ void Aeroplane::Update( bool bPlayerControl )
 			bulletContainer[i]->bulletOffset.z += bulletContainer[i]->speedBullet;// + m_fSpeed;
 		}
 	}
-	if (bombDropped)
-	{
-		XMVECTOR vSColPos, vSColNorm;
-		if (!bombCollided)
-		{
-			XMVECTOR vSPos = XMLoadFloat4(&newBomb->GetBombOffset());
-			XMVECTOR vSVel = XMLoadFloat4(&newBomb->GetBombVelocity());
-			XMVECTOR vSAcc = XMLoadFloat4(&newBomb->GetBombGravity());
-
-			vSPos += vSVel; // Really important that we add LAST FRAME'S velocity as this was how fast the collision is expecting the ball to move
-			vSVel += vSAcc; // The new velocity gets passed through to the collision so it can base its predictions on our speed NEXT FRAME
-
-			newBomb->SetBombVelocity(vSVel);
-			newBomb->SetBombOffset(vSPos);
-
-
-
-			mBombSpeed = XMVectorGetX(XMVector3Length(vSVel));
-
-			bombCollided = Application::s_pApp->HasCollided(vSPos, vSVel, mBombSpeed, vSColPos, vSColNorm);
-
-			if(bombCollided)
-			{
-				//	numberOfBounces++;
-				//mSphereVel = XMFLOAT3(0.0f, 0.0f, 0.0f);
-				newBomb->InvertVelocityY(0.8f);
-			//	mSpherePos.y = mSpherePos.y + 1.0f;
-				bombCollided = true;
-				/*if (numberOfBounces > BOUNCE_LIMIT)
-				{
-				mSphereVel = XMFLOAT3(0.0f, 0.0f, 0.0f);
-				}*/
-
-			}
-		}
-	}
 	
 	// Rotate propellor and turret
 	m_v4PropRot.z += 100 * m_fSpeed;
@@ -356,10 +322,14 @@ void Aeroplane::Update( bool bPlayerControl )
 	UpdateMatrices();
 
 	// Move Forward
-	XMVECTOR vCurrPos = XMLoadFloat4(&m_v4Pos);
-	vCurrPos += m_vForwardVector * m_fSpeed;
-	XMStoreFloat4(&m_v4Pos, vCurrPos);
+	if (!forwardVectorOff)
+	{
+		XMVECTOR vCurrPos = XMLoadFloat4(&m_v4Pos);
+		vCurrPos += m_vForwardVector * m_fSpeed;
+		XMStoreFloat4(&m_v4Pos, vCurrPos);
+	}
 }
+
 
 
 
@@ -382,12 +352,6 @@ void Aeroplane::Draw(const AeroplaneMeshes *pMeshes)
 		Application::s_pApp->SetWorldMatrix(bulletContainer[i]->bulletWorldPosition);
 		pMeshes->pBulletMesh->Draw();
 	}
-	if (bombDropped)
-	{
-		Application::s_pApp->SetWorldMatrix(newBomb->GetBombWorldMatrix());
-		pMeshes->pBombMesh->Draw();
-	}
-	
 }
 
 

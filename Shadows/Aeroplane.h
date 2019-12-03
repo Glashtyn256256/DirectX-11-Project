@@ -111,7 +111,13 @@ __declspec(align(16)) class Aeroplane
 		//void Update( bool bPlayerControl, HeightMap *heightmap );		// Player only has control of plane when flag is set
 		void Update( bool bPlayerControl);		// Player only has control of plane when flag is set
 		void Draw(const AeroplaneMeshes *pMeshes);
-		XMVECTOR GetForwardVector();
+		XMFLOAT4 GetForwardVector() 
+		{
+			XMFLOAT4 temp;
+			
+			XMStoreFloat4(&temp, m_vForwardVector * m_fSpeed);
+			return temp;
+		};
 
 		XMFLOAT4 GetWorldPositonFromMatrix() 
 		{
@@ -120,8 +126,8 @@ __declspec(align(16)) class Aeroplane
 			XMStoreFloat4(&test, test1);
 			return test;
 		};
-		Bomb* GetBombPointer() { return newBomb; }
-		bool HasBombDropped() { return bombDropped; }
+	//	Bomb* GetBombPointer() { return newBomb; }
+		//bool HasBombDropped() { return bombDropped; }
 		void SetWorldPosition( float fX, float fY, float fZ );
 
 	private:
@@ -156,7 +162,7 @@ __declspec(align(16)) class Aeroplane
 		XMMATRIX m_mCamWorldMatrix;						// Camera's world transformation matrix
 
 		bool m_bGunCam;
-
+		bool forwardVectorOff;
 
 		__declspec(align(16)) class GunBullet
 		{
@@ -175,10 +181,10 @@ __declspec(align(16)) class Aeroplane
 		std::vector<GunBullet*> bulletContainer;
 		void deleteBullet();
 
-		Bomb* newBomb;
-		bool bombDropped;
-		bool bombCollided;
-		float mBombSpeed;
+		//Bomb* newBomb;
+		//bool bombDropped;
+		//bool bombCollided;
+		//float mBombSpeed;
 
 	public:
 

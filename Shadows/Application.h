@@ -118,13 +118,14 @@ private:
 	void Render2D();
 
 	CommonMesh *m_pSphereMesh;
-	XMFLOAT3 mSpherePos;
-	XMFLOAT3 mSphereVel;
+	XMFLOAT4 mSpherePos;
+	XMFLOAT4 mSphereVel;
 	float mSphereSpeed;
 	bool mSphereCollided;
+	bool bombDropped;
 	const int BOUNCE_LIMIT = 3;
 	int numberOfBounces;
-	XMFLOAT3 mGravityAcc;
+	XMFLOAT4 mGravityAcc;
 };
 
 #endif

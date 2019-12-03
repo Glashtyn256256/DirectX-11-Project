@@ -131,11 +131,12 @@ bool Application::HandleStart()
 
 	m_bWireframe = false;
 
-	m_pSphereMesh = CommonMesh::NewSphereMesh(this, 1.0f, 16, 16);
-	mSpherePos = XMFLOAT3(0.0F, 30.4F, 0.0F);
-	mSphereVel = XMFLOAT3(0.0f, 0.0f, 0.0f);
-	mGravityAcc = XMFLOAT3(0.0f, 0.0f, 0.0f);
-	mSphereCollided = false;
+	m_pSphereMesh = CommonMesh::NewSphereMesh(this, 0.8f, 16, 16);
+	/*mSpherePos = XMFLOAT4(0.0F, 30.4F, 0.0F, 0.0f);
+	mSphereVel = XMFLOAT4(0.0f, 0.0f, 0.0f, 0.0f);
+	mGravityAcc = XMFLOAT4(0.0f, 0.0f, 0.0f, 0.0f);
+	mSphereCollided = false;*/
+
 
 	m_pHeightMap = new HeightMap( "Resources/heightmap.bmp", 2.0f, &m_drawHeightMapShader );
 	m_pAeroplane = new Aeroplane( 0.0f, 3.5f, 0.0f, 105.0f );
@@ -351,11 +352,12 @@ void Application::HandleUpdate()
 		{
 			static int dx = 0;
 			static int dy = 0;
-			int numberOfBounces = 0;
-			mSpherePos = XMFLOAT3(mSpherePos.x, mSpherePos.y, mSpherePos.z);
-			mSphereVel = XMFLOAT3(0.0f, 0.1f, 0.0f);
-			mGravityAcc = XMFLOAT3(0.0f, -0.05f, 0.0f);
+			numberOfBounces = 0;
+			mSpherePos = m_pAeroplane->GetWorldPositonFromMatrix();
+			mSphereVel = m_pAeroplane->GetForwardVector();
+			mGravityAcc = XMFLOAT4(0.0f, -0.05f, 0.0f, 0.0f);
 			mSphereCollided = false;
+			bombDropped = true;
 			dbT = true;
 		}
 	}
@@ -365,40 +367,42 @@ void Application::HandleUpdate()
 	}
 
 	XMVECTOR vSColPos, vSColNorm;
-
-	if (!mSphereCollided)
+	if (bombDropped)
 	{
-		XMVECTOR vSPos = XMLoadFloat3(&mSpherePos);
-		XMVECTOR vSVel = XMLoadFloat3(&mSphereVel);
-		XMVECTOR vSAcc = XMLoadFloat3(&mGravityAcc);
-
-		vSPos += vSVel; // Really important that we add LAST FRAME'S velocity as this was how fast the collision is expecting the ball to move
-		vSVel += vSAcc; // The new velocity gets passed through to the collision so it can base its predictions on our speed NEXT FRAME
-
-
-		XMStoreFloat3(&mSphereVel, vSVel);
-		XMStoreFloat3(&mSpherePos, vSPos);
-
-
-		mSphereSpeed = XMVectorGetX(XMVector3Length(vSVel));
-
-		mSphereCollided = m_pHeightMap->RayCollision(vSPos, vSVel, mSphereSpeed, vSColPos, vSColNorm);
-
-		if (mSphereCollided)
+		if (!mSphereCollided)
 		{
-		//	numberOfBounces++;
-			//mSphereVel = XMFLOAT3(0.0f, 0.0f, 0.0f);
-			mSphereVel.y = -mSphereVel.y * 0.8f;
-			mSpherePos.y = mSpherePos.y + 1.0f;
-			mSphereCollided = false;
-			/*if (numberOfBounces > BOUNCE_LIMIT)
-			{
-				mSphereVel = XMFLOAT3(0.0f, 0.0f, 0.0f);
-			}*/
+			XMVECTOR vSPos = XMLoadFloat4(&mSpherePos);
+			XMVECTOR vSVel = XMLoadFloat4(&mSphereVel);
+			XMVECTOR vSAcc = XMLoadFloat4(&mGravityAcc);
 
+			vSPos += vSVel; // Really important that we add LAST FRAME'S velocity as this was how fast the collision is expecting the ball to move
+			vSVel += vSAcc; // The new velocity gets passed through to the collision so it can base its predictions on our speed NEXT FRAME
+
+
+			XMStoreFloat4(&mSphereVel, vSVel);
+			XMStoreFloat4(&mSpherePos, vSPos);
+
+
+			mSphereSpeed = XMVectorGetX(XMVector4Length(vSVel));
+
+			mSphereCollided = m_pHeightMap->RayCollision(vSPos, vSVel, mSphereSpeed, vSColPos, vSColNorm);
+
+			if (mSphereCollided)
+			{
+				numberOfBounces++;
+				//mSphereVel = XMFLOAT3(0.0f, 0.0f, 0.0f);
+				mSphereVel.y = -mSphereVel.y * 0.8f;
+				mSpherePos.y = mSpherePos.y + 1.0f;
+				mSphereCollided = false;
+				if (numberOfBounces > BOUNCE_LIMIT)
+				{
+					mSphereVel = XMFLOAT4(0.0f, 0.0f, 0.0f, 0.0f);
+					bombDropped = false;
+				}
+
+			}
 		}
 	}
-
 	m_pAeroplane->Update( m_cameraState != CAMERA_MAP );
 	/*static float slow = 101.0;
 	++slow;
@@ -552,7 +556,7 @@ void Application::Render3D()
 			vLookat = XMLoadFloat4(&vFocusPos);
 			break;
 		case CAMERA_LIGHT:
-			vCamera = XMLoadFloat3(&mSpherePos);
+			vCamera = XMLoadFloat4(&mSpherePos);
 			vLookat = XMLoadFloat4(&vPlanePos);
 			break;
 			

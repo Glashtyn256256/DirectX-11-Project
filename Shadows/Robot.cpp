@@ -145,14 +145,17 @@ void Robot::Update(float time)
 
 	if (Application::s_pApp->IsKeyPressed('1'))
 	{
+		previousAnimation = currentAnimation;
 		currentAnimation = animationAttack;
 	}
 	if (Application::s_pApp->IsKeyPressed('2'))
 	{
+		previousAnimation = currentAnimation;
 		currentAnimation = animationIdle;
 	}
 	if (Application::s_pApp->IsKeyPressed('3'))
 	{
+		previousAnimation = currentAnimation;
 		currentAnimation = animationDeath;
 	}
 
@@ -241,6 +244,10 @@ void Robot::Update(float time)
 							float rLerp = (animTime - data->previousRotationTime) / (rotationEndTime - data->previousRotationTime);
 							currentRotation = data->rotations[currentRotFrame];
 							bone->SetSkeletonRotationPosition(ReturnLerpedPosition(previousRotation, currentRotation, rLerp));
+
+						//Animation 1 we lerp returnLerpedPosition(current anim - >previousRotation,currentanim -> currentRotation, rLerp)
+						//animation2 2 returnLerpedPosition(changed animation ->previousRotation, changed anim -> currentRotation, rLerp)
+						//bone->SetSkeletonRotationPosition(ReturnLerpedPosition(animtion1, animtion2, time)}
 						}
 
 						if (animTime >= rotationEndTime)
