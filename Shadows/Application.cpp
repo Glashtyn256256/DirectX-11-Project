@@ -34,6 +34,7 @@ bool Application::HandleStart()
 	normalMotionTime = 0.01666666666;// 1.0f / 60; 
 	time = normalMotionTime;
 	this->slowMotion = false;
+	drawBomb = false;
 
 	s_pApp = this;
 
@@ -132,11 +133,12 @@ bool Application::HandleStart()
 
 	m_bWireframe = false;
 
-	m_pSphereMesh = CommonMesh::NewSphereMesh(this, 1.0f, 16, 16);
+	
 	/*mSpherePos = XMFLOAT4(0.0F, 30.4F, 0.0F, 0.0f);
 	mSphereVel = XMFLOAT4(0.0f, 0.0f, 0.0f, 0.0f);
 	mGravityAcc = XMFLOAT4(0.0f, 0.0f, 0.0f, 0.0f);
 	mSphereCollided = false;*/
+	m_pSphereMesh = CommonMesh::NewSphereMesh(this, 1.0f, 16, 16);
 	m_pSphereShadowMesh = CommonMesh::NewSphereMesh(this, 1.0f, 16, 16);
 
 	m_pHeightMap = new HeightMap( "Resources/heightmap.bmp", 2.0f, &m_drawHeightMapShader );
@@ -222,7 +224,8 @@ void Application::HandleStop()
 
 	if (m_pSphereMesh)
 		delete m_pSphereMesh;
-
+	if (m_pSphereMesh)
+		delete m_pSphereShadowMesh;
 
 
 	Release(m_drawHeightMapShaderVSConstants.pCB);
@@ -369,6 +372,7 @@ void Application::HandleUpdate()
 			mSphereVel = m_pAeroplane->GetForwardVector();
 			mGravityAcc = XMFLOAT4(0.0f, -0.05f, 0.0f, 0.0f);
 			mSphereCollided = false;
+			drawBomb = true;
 			bombDropped = true;
 			dbT = true;
 		}
@@ -409,7 +413,9 @@ void Application::HandleUpdate()
 				mSphereVel.x = mSphereVel.x * 0.7f;
 				mSphereVel.y = mSphereVel.y * 0.7f;
 				mSphereVel.z = mSphereVel.z * 0.7f;
-				mSpherePos.y = mSpherePos.y + 1.0f; //this will stop the ball going halfway into the ground and bring it up.
+				//this will stop the ball going halfway into the ground and bring it up. Used to be one
+				//Had to chnage because when I added shadows in was floating.
+				mSpherePos.y = mSpherePos.y + 0.82f; 
 				mSphereCollided = false;
 				if (numberOfBounces > BOUNCE_LIMIT)
 				{
@@ -546,13 +552,15 @@ void Application::RenderShadow()
 	m_pRobot3->DrawShadow();
 	m_pRobot3->DrawShadow();
 
-	XMMATRIX worldMtxx;
-	worldMtxx = XMMatrixTranslation(mSpherePos.x, mSpherePos.y, mSpherePos.z);
-	this->SetWorldMatrix(worldMtxx);
-	SetDepthStencilState(true, true);
-	if (m_pSphereShadowMesh)
-		m_pSphereShadowMesh->Draw();
-	
+	if (drawBomb)
+	{
+		XMMATRIX worldMtxx;
+		worldMtxx = XMMatrixTranslation(mSpherePos.x, mSpherePos.y, mSpherePos.z);
+		this->SetWorldMatrix(worldMtxx);
+		SetDepthStencilState(true, true);
+		if (m_pSphereShadowMesh)
+			m_pSphereShadowMesh->Draw();
+	}
 	this->SetDefaultRenderTarget();
 }
 
@@ -679,16 +687,15 @@ void Application::Render3D()
 	m_pRobot1->DrawAll();
 	m_pRobot2->DrawAll();
 	m_pRobot3->DrawAll();
-	
-	XMMATRIX worldMtxx;
-
-	worldMtxx = XMMatrixTranslation(mSpherePos.x, mSpherePos.y, mSpherePos.z);
-
-	this->SetWorldMatrix(worldMtxx);
-	SetDepthStencilState(true, true);
-	if (m_pSphereMesh)
-		m_pSphereMesh->Draw();
-
+	if (drawBomb)
+	{
+		XMMATRIX worldMtxx;
+		worldMtxx = XMMatrixTranslation(mSpherePos.x, mSpherePos.y, mSpherePos.z);
+		this->SetWorldMatrix(worldMtxx);
+		SetDepthStencilState(true, true);
+		if (m_pSphereMesh)
+			m_pSphereMesh->Draw();
+	}
 	XMMATRIX worldMtx = XMMatrixTranslation(m_shadowCastingLightPosition.x,  m_shadowCastingLightPosition.y,  m_shadowCastingLightPosition.z);
 	this->SetWorldMatrix(worldMtx);
 	m_pShadowCastingLightMesh->Draw();

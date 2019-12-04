@@ -123,6 +123,7 @@ private:
 	float mSphereSpeed;
 	bool mSphereCollided;
 	bool bombDropped;
+	bool drawBomb;
 	const int BOUNCE_LIMIT = 3;
 	int numberOfBounces;
 	XMFLOAT4 mGravityAcc;
