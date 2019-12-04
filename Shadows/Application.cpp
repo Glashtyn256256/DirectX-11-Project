@@ -137,7 +137,7 @@ bool Application::HandleStart()
 	mSphereVel = XMFLOAT4(0.0f, 0.0f, 0.0f, 0.0f);
 	mGravityAcc = XMFLOAT4(0.0f, 0.0f, 0.0f, 0.0f);
 	mSphereCollided = false;*/
-
+	m_pSphereShadowMesh = CommonMesh::NewSphereMesh(this, 1.0f, 16, 16);
 
 	m_pHeightMap = new HeightMap( "Resources/heightmap.bmp", 2.0f, &m_drawHeightMapShader );
 	m_pAeroplane = new Aeroplane( 0.0f, 3.5f, 0.0f, 105.0f );
@@ -184,7 +184,7 @@ bool Application::HandleStart()
 	m_pRobot1->ChangeMeshToShadow(m_drawShadowCasterShader);
 	m_pRobot2->ChangeMeshToShadow(m_drawShadowCasterShader);
 	m_pRobot3->ChangeMeshToShadow(m_drawShadowCasterShader);
-
+	m_pSphereShadowMesh->SetShaderForAllSubsets(&m_drawShadowCasterShader);
 
 	m_pAeroplaneShadowMeshes->pBulletMesh->SetShaderForAllSubsets(&m_drawShadowCasterShader);
 	m_pAeroplaneShadowMeshes->pGunMesh->SetShaderForAllSubsets(&m_drawShadowCasterShader);
@@ -222,6 +222,8 @@ void Application::HandleStop()
 
 	if (m_pSphereMesh)
 		delete m_pSphereMesh;
+
+
 
 	Release(m_drawHeightMapShaderVSConstants.pCB);
 	Release(m_drawHeightMapShaderPSConstants.pCB);
@@ -483,7 +485,7 @@ void Application::RenderShadow()
 
 	//XMFLOAT4 vTemp = m_pAeroplane->GetPosition();
 	//XMFLOAT4 vTemp = { 0.0f,0.0f,0.0f, 0.0f };
-	XMFLOAT4 vTemp =m_pRobot->GetWorldPosition();
+	XMFLOAT4 vTemp = m_pRobot->GetWorldPosition();
 	XMVECTOR vPlanePos = XMLoadFloat4(&vTemp);
 
 	//*************************************************************************
@@ -536,6 +538,7 @@ void Application::RenderShadow()
 	this->SetDepthStencilState(true);
 	this->SetRasterizerState(false, false);
 	
+	
 	m_pAeroplane->Draw(m_pAeroplaneShadowMeshes);
 	m_pRobot->DrawShadow();
 	m_pRobot1->DrawShadow();
@@ -543,6 +546,13 @@ void Application::RenderShadow()
 	m_pRobot3->DrawShadow();
 	m_pRobot3->DrawShadow();
 
+	XMMATRIX worldMtxx;
+	worldMtxx = XMMatrixTranslation(mSpherePos.x, mSpherePos.y, mSpherePos.z);
+	this->SetWorldMatrix(worldMtxx);
+	SetDepthStencilState(true, true);
+	if (m_pSphereShadowMesh)
+		m_pSphereShadowMesh->Draw();
+	
 	this->SetDefaultRenderTarget();
 }
 

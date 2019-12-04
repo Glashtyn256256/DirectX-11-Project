@@ -117,6 +117,7 @@ private:
 	void Render2D();
 
 	CommonMesh *m_pSphereMesh;
+	CommonMesh *m_pSphereShadowMesh;
 	XMFLOAT4 mSpherePos;
 	XMFLOAT4 mSphereVel;
 	float mSphereSpeed;
