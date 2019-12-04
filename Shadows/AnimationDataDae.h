@@ -9,18 +9,25 @@ class SkeletonAnimationData {
 public:
 	SkeletonAnimationData();
 
+
+
 	std::string boneName; //getboneName
 
 	std::vector <float> tranTime;
 	std::vector<XMFLOAT4> translate;
 
+	std::vector<float> rotTime;
 	std::vector<XMFLOAT4> rotations;
-	std::vector<float> rotTime; 
-	std::vector<float> rotX;
-	std::vector<float> rotY;
-	std::vector<float> rotZ;
+	 
+	//std::vector<float> rotX;
+	//std::vector<float> rotY;
+	//std::vector<float> rotZ;
 
-
+	void ResetCurrentFrames() 
+	{
+		tranCurrentFrame = 0;
+		rotCurrentFrame = 0;
+	}
 	int tranCurrentFrame; //Where the 
 	int rotCurrentFrame;
 

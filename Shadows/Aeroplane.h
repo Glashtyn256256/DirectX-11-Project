@@ -126,6 +126,7 @@ __declspec(align(16)) class Aeroplane
 			XMStoreFloat4(&test, test1);
 			return test;
 		};
+
 	//	Bomb* GetBombPointer() { return newBomb; }
 		//bool HasBombDropped() { return bombDropped; }
 		void SetWorldPosition( float fX, float fY, float fZ );
@@ -178,7 +179,7 @@ __declspec(align(16)) class Aeroplane
 		};
 		float normalMotionDeltaTime;
 		GunBullet* newBullet;
-		std::vector<GunBullet*> bulletContainer;
+	
 		void deleteBullet();
 
 		//Bomb* newBomb;
@@ -187,7 +188,7 @@ __declspec(align(16)) class Aeroplane
 		//float mBombSpeed;
 
 	public:
-
+		std::vector<GunBullet*> bulletContainer;
 		float GetXPosition(void) { return m_v4Pos.x; }
 		float GetYPosition(void) { return m_v4Pos.y; }
 		float GetZPosition(void) { return m_v4Pos.z; }

@@ -434,10 +434,10 @@ void Application::HandleUpdate()
 		slow += time;
 		if (slow > 1)
 		{
-			m_pRobot->Update(time);
-			m_pRobot1->Update(time);
-			m_pRobot2->Update(time);
-			m_pRobot3->Update(time);
+			m_pRobot->Update(time, m_pAeroplane);
+			m_pRobot1->Update(time, m_pAeroplane);
+			m_pRobot2->Update(time, m_pAeroplane);
+			m_pRobot3->Update(time, m_pAeroplane);
 
 			slow = 0;
 		}
@@ -445,10 +445,10 @@ void Application::HandleUpdate()
 	}
 	else
 	{
-		m_pRobot->Update(time);
-		m_pRobot1->Update(time);
-		m_pRobot2->Update(time);
-		m_pRobot3->Update(time);
+		m_pRobot->Update(time, m_pAeroplane);
+		m_pRobot1->Update(time, m_pAeroplane);
+		m_pRobot2->Update(time, m_pAeroplane);
+		m_pRobot3->Update(time, m_pAeroplane);
 	}
 	
 
@@ -503,6 +503,7 @@ void Application::RenderShadow()
 	float aspect = 1.2f;*/
 	float aspect = RENDER_TARGET_WIDTH / RENDER_TARGET_HEIGHT;
 
+	//disstancetorobot
 	float distanceToPlane = sqrt(pow(vTemp.x - m_shadowCastingLightPosition.x, 2) + 
 		pow(vTemp.y - m_shadowCastingLightPosition.y, 2) + 
 		pow(vTemp.z - m_shadowCastingLightPosition.z, 2)); //pythagoras REMEMBER  THE CAMERA ON THE SLIDES IS THE LIGHTSOURCE.

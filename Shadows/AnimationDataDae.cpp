@@ -92,7 +92,7 @@ void AnimationDataDae::readDaeFile(const char* filePath)
 							else {
 								XMFLOAT4 pushback = { std::stof(textFromDaeFile), 0.0f,0.0f,0.0f };
 								newBone->rotations.push_back(pushback);
-								newBone->rotX.push_back(std::stof(textFromDaeFile));
+							//	newBone->rotX.push_back(std::stof(textFromDaeFile));
 
 							}//may need to change newbone from a struct to a class
 
@@ -106,7 +106,7 @@ void AnimationDataDae::readDaeFile(const char* filePath)
 							if (loopCycle == 2) 
 							{
 								newBone->rotations[i].y = std::stof(textFromDaeFile);
-								newBone->rotY.push_back(std::stof(textFromDaeFile));
+								//newBone->rotY.push_back(std::stof(textFromDaeFile));
 							}
 						}
 					}
@@ -118,7 +118,7 @@ void AnimationDataDae::readDaeFile(const char* filePath)
 							if (loopCycle == 2)
 							{
 								newBone->rotations[i].z = std::stof(textFromDaeFile);
-								newBone->rotZ.push_back(std::stof(textFromDaeFile));
+								//newBone->rotZ.push_back(std::stof(textFromDaeFile));
 							}
 						}
 					}

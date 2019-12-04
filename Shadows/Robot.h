@@ -3,6 +3,7 @@
 
 #include "AnimationDataDae.h"
 #include "Application.h"
+#include "Aeroplane.h"
 #include "CommonApp.h"
 #include <iostream>
 #include <String>
@@ -30,7 +31,11 @@ public:
 	void ChangeMeshToShadow(CommonApp::Shader& shader);
 	void ReleaseResources(void);
 	void UpdateMatrices(void);
-	void Update(float deltatime);
+	void Update(float deltatime, Aeroplane* plane);
+	bool PlaneAttackWhenClose(Aeroplane * plane);
+	bool HitByBullet(Aeroplane * plane);
+	void PlayAnimation(AnimationDataDae*& currentAnimation, float time);
+	void PlayAnimation(AnimationDataDae *& currentAnimation, AnimationDataDae *& previousAnimation, float time);
 	XMFLOAT4 ReturnLerpedPosition(XMFLOAT4 current, XMFLOAT4 previous, float lerptime);
 	void DrawAll(void);
 	void DrawShadow(void);
@@ -66,6 +71,8 @@ private:
 	Transform transform;
 	int count = 0;
 	float animTime;
+	bool hasRobotBeenHit;
+	bool RobotAttackPlane;
 
 	
 	AnimationDataDae* previousAnimation;
@@ -73,7 +80,6 @@ private:
 	AnimationDataDae* animationAttack;
 	AnimationDataDae* animationIdle;
 	AnimationDataDae* animationDeath;
-
 	SkeletonAnimationData* previousData;
 };
 #endif
