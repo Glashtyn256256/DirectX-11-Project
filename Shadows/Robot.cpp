@@ -145,17 +145,17 @@ void Robot::Update(float time)
 
 	if (Application::s_pApp->IsKeyPressed('1'))
 	{
-		previousAnimation = currentAnimation;
+	//	previousAnimation = currentAnimation;
 		currentAnimation = animationAttack;
 	}
 	if (Application::s_pApp->IsKeyPressed('2'))
 	{
-		previousAnimation = currentAnimation;
+	//	previousAnimation = currentAnimation;
 		currentAnimation = animationIdle;
 	}
 	if (Application::s_pApp->IsKeyPressed('3'))
 	{
-		previousAnimation = currentAnimation;
+	//	previousAnimation = currentAnimation;
 		currentAnimation = animationDeath;
 	}
 

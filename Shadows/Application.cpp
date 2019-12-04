@@ -18,11 +18,11 @@ const int CAMERA_MAX = 6;
 //static const int RENDER_TARGET_WIDTH = 512;
 //static const int RENDER_TARGET_HEIGHT = 512;
 
-static const int RENDER_TARGET_WIDTH = 1024;
-static const int RENDER_TARGET_HEIGHT = 1024;
+static const int RENDER_TARGET_WIDTH = 16350;
+static const int RENDER_TARGET_HEIGHT = 16350;
 
 static const float AEROPLANE_RADIUS = 6.0f;
-static const float ROBOT_RADIUS = 50.f;
+static const float ROBOT_RADIUS = 620.f;
 
 //////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////
@@ -64,7 +64,7 @@ bool Application::HandleStart()
 
 	m_pRenderTargetDebugDisplayBuffer = NULL;
 
-	m_shadowCastingLightPosition = XMFLOAT3(4.0f, 200.f, 100.f);
+	m_shadowCastingLightPosition = XMFLOAT3(4.0f, 3000.f, 100.f);
 	m_shadowColour = XMFLOAT4(0.f, 0.f, 0.f, .25f);
 
 	m_pShadowSamplerState = NULL;
@@ -234,6 +234,9 @@ void Application::HandleStop()
 
 	m_pRobot->ReleaseResources();
 	delete m_pRobot;
+	delete m_pRobot1;
+	delete m_pRobot2;
+	delete m_pRobot3;
 
 	m_drawShadowCasterShader.Reset();
 
@@ -404,7 +407,7 @@ void Application::HandleUpdate()
 				mSphereVel.x = mSphereVel.x * 0.7f;
 				mSphereVel.y = mSphereVel.y * 0.7f;
 				mSphereVel.z = mSphereVel.z * 0.7f;
-				mSpherePos.y = mSpherePos.y + 1.0f;
+				mSpherePos.y = mSpherePos.y + 1.0f; //this will stop the ball going halfway into the ground and bring it up.
 				mSphereCollided = false;
 				if (numberOfBounces > BOUNCE_LIMIT)
 				{
@@ -416,14 +419,6 @@ void Application::HandleUpdate()
 		}
 	}
 	m_pAeroplane->Update( m_cameraState != CAMERA_MAP );
-	/*static float slow = 101.0;
-	++slow;
-	if (slow > 100)
-	{
-	
-
-		slow = 0;
-	}*/
 
 	static float slow;
 	if (slowMotion == true)
@@ -541,8 +536,12 @@ void Application::RenderShadow()
 	this->SetDepthStencilState(true);
 	this->SetRasterizerState(false, false);
 	
-	//m_pAeroplane->Draw(m_pAeroplaneShadowMeshes);
+	m_pAeroplane->Draw(m_pAeroplaneShadowMeshes);
 	m_pRobot->DrawShadow();
+	m_pRobot1->DrawShadow();
+	m_pRobot2->DrawShadow();
+	m_pRobot3->DrawShadow();
+	m_pRobot3->DrawShadow();
 
 	this->SetDefaultRenderTarget();
 }
