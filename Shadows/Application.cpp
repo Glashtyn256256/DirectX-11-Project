@@ -69,8 +69,16 @@ bool Application::HandleStart()
 
 	m_pShadowSamplerState = NULL;
 
+	m_pTimes = NULL;
+	m_pArial = NULL;
+	m_fontStyle = CommonFont::Style(VertexColour(255, 0, 0, 255), XMFLOAT2(.1f, .1f));
+
+
 	if (!this->CommonApp::HandleStart())
 		return false;
+
+	m_pTimes = CommonFont::CreateByName("Times", 16, 0, this);
+	m_pArial = CommonFont::CreateByName("Arial", 16, CommonFont::CREATE_BOLD, this);
 
 	char aMaxNumLightsStr[100];
 	_snprintf_s(aMaxNumLightsStr, sizeof aMaxNumLightsStr, _TRUNCATE, "%d", MAX_NUM_LIGHTS);
@@ -625,7 +633,7 @@ void Application::Render3D()
 	this->Clear(XMFLOAT4(.2f, .2f, .6f, 1.f));
 
 	this->SetWorldMatrix(XMMatrixIdentity());
-
+	
 	{
 		D3D11_MAPPED_SUBRESOURCE vsMap;
 		if (!m_drawHeightMapShaderVSConstants.pCB || FAILED(m_pD3DDeviceContext->Map(m_drawHeightMapShaderVSConstants.pCB, 0, D3D11_MAP_WRITE_DISCARD, 0, &vsMap)))
@@ -675,9 +683,11 @@ void Application::Render3D()
 
 		m_pHeightMap->Draw(m_pSamplerState);
 	}
+	
+
+	
 
 	m_pAeroplane->Draw(m_pAeroplaneDefaultMeshes);
-
 	m_pRobot->DrawAll();
 	m_pRobot1->DrawAll();
 	m_pRobot2->DrawAll();
@@ -694,6 +704,7 @@ void Application::Render3D()
 	XMMATRIX worldMtx = XMMatrixTranslation(m_shadowCastingLightPosition.x,  m_shadowCastingLightPosition.y,  m_shadowCastingLightPosition.z);
 	this->SetWorldMatrix(worldMtx);
 	m_pShadowCastingLightMesh->Draw();
+	//m_pArial->DrawString(XMFLOAT3(0.f, 5.f, 0.f), &m_fontStyle, "Red Bold Arial");
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -711,7 +722,7 @@ void Application::Render2D()
 	this->SetViewMatrix(viewMtx);
 
 	this->SetWorldMatrix(XMMatrixIdentity());
-
+	
 	this->SetDepthStencilState(false, false);
 	this->SetRasterizerState(false, false);
 	this->SetBlendState(false);

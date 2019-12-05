@@ -125,53 +125,54 @@ void Robot::UpdateMatrices(void)
 
 void Robot::Update(float time, Aeroplane* plane)
 {
-	if (Application::s_pApp->IsKeyPressed('D'))
-		m_v4CamOff.z -= 2.0f;
-
-	if (Application::s_pApp->IsKeyPressed('G'))
-		m_v4CamOff.z += 2.0f;
-
-	if (Application::s_pApp->IsKeyPressed('R'))
-		m_v4CamOff.y -= 2.0f;
-
-	if (Application::s_pApp->IsKeyPressed('F'))
-		m_v4CamOff.y += 2.0f;
-
-	if (Application::s_pApp->IsKeyPressed('T'))
-		m_v4CamOff.x -= 2.0f;
-
-	if (Application::s_pApp->IsKeyPressed('E'))
-		m_v4CamOff.x += 2.0f;
-
 
 	if (Application::s_pApp->IsKeyPressed('1'))
-	{
-		/*if (currentAnimation != animationAttack)
-		{
-			previousAnimation = currentAnimation;
-		}*/
-		currentAnimation = animationAttack;
-	}
-	if (Application::s_pApp->IsKeyPressed('2'))
 	{
 		/*if (currentAnimation != animationIdle)
 		{
 			previousAnimation = currentAnimation;
 		}*/
-		currentAnimation = animationIdle;
+		if (currentAnimation == nullptr)
+		{
+			currentAnimation = animationIdle;
+		}
+		//animationElapsedTime = 0;
 	}
+
+	if (Application::s_pApp->IsKeyPressed('2'))
+	{
+		/*if (currentAnimation != animationAttack)
+		{
+			previousAnimation = currentAnimation;
+		}*/
+		if (currentAnimation == nullptr)
+		{
+			currentAnimation = animationAttack;
+		}
+		
+		//animationElapsedTime = 0;
+	}
+
 	if (Application::s_pApp->IsKeyPressed('3'))
 	{
 		/*if (currentAnimation != animationDeath)
 		{
 			previousAnimation = currentAnimation;
 		}*/
-		currentAnimation = animationDeath;
+		if (currentAnimation == nullptr)
+		{
+			currentAnimation = animationDeath;
+		}
+		//animationElapsedTime = 0;
 	}
 
 	if (PlaneAttackWhenClose(plane))
 	{
-		currentAnimation = animationAttack;
+		if (currentAnimation == nullptr)
+		{
+			currentAnimation = animationAttack;
+		}
+		
 	}
 
 	if (!hasRobotBeenHit)
@@ -255,47 +256,39 @@ void Robot::PlayAnimation(AnimationDataDae*& currentAnimation, float time)
 		{
 			Skeleton* bone = skeletonParts[i];
 
-			if (animationElapsedTime >= currentAnimation->finalFrameEndTime)
-			{
-				data->ResetCurrentFrames();
-				
-			}
 			int translationTimeArraySize(data->translationTimes.size() - 1);
+
 			int currentTransformationFrame = data->translationCurrentFrame;
 			if (!(currentTransformationFrame > translationTimeArraySize))
 			{
-			float translationEndTime = data->translationTimes[currentTransformationFrame];
-			XMFLOAT4 previousTranslation;
-			XMFLOAT4 currentTranslation;
+				float translationEndTime = data->translationTimes[currentTransformationFrame];
+				XMFLOAT4 previousTranslation;
+				XMFLOAT4 currentTranslation;
 
-			if (currentTransformationFrame == 0)
-			{
-				previousTranslation = bone->GetOffsetPosition();
-			}
-			else
-			{
-				previousTranslation = data->translation[currentTransformationFrame - 1];
-			}
+				if (currentTransformationFrame == 0)
+				{
+					//previousTranslation = bone->GetOffsetPosition();
+					previousTranslation = data->translation[currentTransformationFrame];
+				}
+				else
+				{
+					previousTranslation = data->translation[currentTransformationFrame - 1];
+				}
 
-			if (!(animationElapsedTime >= translationEndTime))
-			{
-				float tLerp = (animationElapsedTime - data->previousTranslationTime) / (translationEndTime - data->previousTranslationTime);
-				currentTranslation = data->translation[currentTransformationFrame];
-				bone->SetSkeletonOffsetPosition(ReturnLerpedPosition(previousTranslation, currentTranslation, tLerp));
-			}
-			else
-			{
-				count++;
-			}
-			if (animationElapsedTime >= translationEndTime)
-			{
-				data->previousTranslationTime = translationEndTime;
+				if (!(animationElapsedTime >= translationEndTime))
+				{
+					float tLerp = (animationElapsedTime - data->previousTranslationTime) / (translationEndTime - data->previousTranslationTime);
+					currentTranslation = data->translation[currentTransformationFrame];
+					bone->SetSkeletonOffsetPosition(ReturnLerpedPosition(previousTranslation, currentTranslation, tLerp));
+				}
 
-				currentTransformationFrame++;
-				if (currentTransformationFrame > data->translationTimes.size())
-					currentTransformationFrame = data->translationTimes.size();
-			}
+				if (animationElapsedTime >= translationEndTime)
+				{
+					data->previousTranslationTime = translationEndTime;
+					currentTransformationFrame++;
+				}
 			data->translationCurrentFrame = currentTransformationFrame;
+
 			}
 
 			int rotationTimeArraySize(data->rotationTimes.size() - 1);
@@ -303,46 +296,58 @@ void Robot::PlayAnimation(AnimationDataDae*& currentAnimation, float time)
 			if (!(currentRotationFrame > rotationTimeArraySize))
 			{
 
-			float rotationEndTime = data->rotationTimes[currentRotationFrame];
-			XMFLOAT4 previousRotation;
-			XMFLOAT4 currentRotation;
+					float rotationEndTime = data->rotationTimes[currentRotationFrame];
+					XMFLOAT4 previousRotation;
+					XMFLOAT4 currentRotation;
 
-			if (currentRotationFrame == 0)
-			{
-				previousRotation = bone->GetRotationPosition();
+					if (currentRotationFrame == 0)
+					{
+						previousRotation = bone->GetRotationPosition();
+					}
+					else
+					{
+						previousRotation = data->rotations[currentRotationFrame - 1];
+					}
+
+					if (!(animationElapsedTime >= rotationEndTime))
+					{
+						float rLerp = (animationElapsedTime - data->previousRotationTime) / (rotationEndTime - data->previousRotationTime);
+						currentRotation = data->rotations[currentRotationFrame];
+						bone->SetSkeletonRotationPosition(ReturnLerpedPosition(previousRotation, currentRotation, rLerp));
+
+						//Animation 1 we lerp returnLerpedPosition(current anim - >previousRotation,currentanim -> currentRotation, rLerp)
+						//animation2 2 returnLerpedPosition(changed animation ->previousRotation, changed anim -> currentRotation, rLerp)
+						//bone->SetSkeletonRotationPosition(ReturnLerpedPosition(animtion1, animtion2, time)}
+					}
+
+					if (animationElapsedTime >= rotationEndTime)
+					{
+						data->previousRotationTime = rotationEndTime;
+
+						currentRotationFrame++;
+					}
+					data->rotationCurrentFrame = currentRotationFrame;
+
+					/*if (animationElapsedTime >= currentAnimation->finalFrameEndTime)
+					{
+						data->ResetCurrentFrames();
+						data->ResetPreviousTimes();
+
+					}*/
 			}
-			else
+			if (animationElapsedTime >= currentAnimation->finalFrameEndTime)
 			{
-				previousRotation = data->rotations[currentRotationFrame - 1];
-			}
+				data->ResetCurrentFrames();
+				data->ResetPreviousTimes();
 
-			if (!(animationElapsedTime >= rotationEndTime))
-			{
-				float rLerp = (animationElapsedTime - data->previousRotationTime) / (rotationEndTime - data->previousRotationTime);
-				currentRotation = data->rotations[currentRotationFrame];
-				bone->SetSkeletonRotationPosition(ReturnLerpedPosition(previousRotation, currentRotation, rLerp));
-
-				//Animation 1 we lerp returnLerpedPosition(current anim - >previousRotation,currentanim -> currentRotation, rLerp)
-				//animation2 2 returnLerpedPosition(changed animation ->previousRotation, changed anim -> currentRotation, rLerp)
-				//bone->SetSkeletonRotationPosition(ReturnLerpedPosition(animtion1, animtion2, time)}
-			}
-
-			if (animationElapsedTime >= rotationEndTime)
-			{
-				data->previousRotationTime = rotationEndTime;
-
-				currentRotationFrame++;
-				if (currentRotationFrame > data->rotationTimes.size())
-					currentRotationFrame = data->rotationTimes.size();
-			}
-			data->rotationCurrentFrame = currentRotationFrame;
 			}
 		}
-	}
 
+	}
 
 	if (animationElapsedTime >= currentAnimation->finalFrameEndTime)
 	{
+		//data->ResetCurrentFrames();
 		animationElapsedTime = 0;
 		currentAnimation = nullptr;
 	}

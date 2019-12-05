@@ -11,6 +11,7 @@
 
 #include "CommonApp.h"
 #include "CommonMesh.h"
+#include "CommonFont.h"
 
 class Aeroplane;
 class AeroplaneMeshes;
@@ -127,6 +128,10 @@ private:
 	const int BOUNCE_LIMIT = 3;
 	int numberOfBounces;
 	XMFLOAT4 mGravityAcc;
+
+	CommonFont *m_pTimes;
+	CommonFont *m_pArial;
+	CommonFont::Style m_fontStyle;
 };
 
 #endif
