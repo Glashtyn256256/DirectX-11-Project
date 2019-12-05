@@ -12,8 +12,7 @@ const int CAMERA_PLANE = 1;
 const int CAMERA_GUN = 2;
 const int CAMERA_ROBOT = 3;
 const int CAMERA_BOMB = 4;
-const int CAMERA_LIGHT = 5;
-const int CAMERA_MAX = 6;
+const int CAMERA_MAX = 5;
 
 //static const int RENDER_TARGET_WIDTH = 512;
 //static const int RENDER_TARGET_HEIGHT = 512;
@@ -142,7 +141,7 @@ bool Application::HandleStart()
 	m_pSphereShadowMesh = CommonMesh::NewSphereMesh(this, 1.0f, 16, 16);
 
 	m_pHeightMap = new HeightMap( "Resources/heightmap.bmp", 2.0f, &m_drawHeightMapShader );
-	m_pAeroplane = new Aeroplane( 0.0f, 3.5f, 0.0f, 105.0f );
+	m_pAeroplane = new Aeroplane( -140.0f, 3.5f, 36.0f, 105.0f );
 
 	//m_pRobot = new Robot("hierarchy.txt", 0.0f, 2.4f, -20.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f);
 	//m_pRobot = new Robot("hierarchy.txt", 0.0f, 2.4f, 0.0f, 0.0f, 0.0f, 90.0f, 00.0f, 0.0f);
@@ -413,8 +412,8 @@ void Application::HandleUpdate()
 				mSphereVel.x = mSphereVel.x * 0.7f;
 				mSphereVel.y = mSphereVel.y * 0.7f;
 				mSphereVel.z = mSphereVel.z * 0.7f;
-				//this will stop the ball going halfway into the ground and bring it up. Used to be one
-				//Had to chnage because when I added shadows in was floating.
+				/*this will stop the ball going halfway into the ground and bring it up. Used to be one
+				Had to change because when I added shadows in it was floating.*/
 				mSpherePos.y = mSpherePos.y + 0.82f; 
 				mSphereCollided = false;
 				if (numberOfBounces > BOUNCE_LIMIT)
@@ -607,12 +606,7 @@ void Application::Render3D()
 		case CAMERA_BOMB:
 			vCamera = XMLoadFloat4(&vCamPos);
 			vLookat = XMLoadFloat4(&mSpherePos);
-			break;
-		case CAMERA_LIGHT:
-			vCamera = XMLoadFloat4(&mSpherePos);
-			vLookat = XMLoadFloat4(&vPlanePos);
-			break;
-			
+			break;		
 	}
 
     XMMATRIX  matView;
@@ -723,8 +717,8 @@ void Application::Render2D()
 	this->SetBlendState(false);
 
 	//If we chnage the m_pRenderTargetDebugDisplayBuffer to null that map in bottom left goes.
-	//this->DrawTextured(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP, NULL, NULL, 4, m_pRenderTargetColourTextureView, this->GetSamplerState());
-	this->DrawTextured(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP, m_pRenderTargetDebugDisplayBuffer, NULL, 4, m_pRenderTargetColourTextureView, this->GetSamplerState());
+	this->DrawTextured(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP, NULL, NULL, 4, m_pRenderTargetColourTextureView, this->GetSamplerState());
+	//this->DrawTextured(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP, m_pRenderTargetDebugDisplayBuffer, NULL, 4, m_pRenderTargetColourTextureView, this->GetSamplerState());
 }
 
 //////////////////////////////////////////////////////////////////////////

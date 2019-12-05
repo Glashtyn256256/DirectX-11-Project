@@ -16,7 +16,7 @@ void AnimationDataDae::readDaeFile(const char* filePath)
 {
 	std::stringstream textLineFromFile;
 
-	endTime = 0;
+	finalFrameEndTime = 0;
 	int count;
 	XMFLOAT4 splitTransform;
 	SkeletonAnimationData* newBone = new SkeletonAnimationData;
@@ -57,10 +57,10 @@ void AnimationDataDae::readDaeFile(const char* filePath)
 									if (loopCycle == 1) //one means input which is time and two means output which is xyz co-ords
 									{
 										float time = std::stof(textFromDaeFile);
-										newBone->tranTime.push_back(time);
+										newBone->translationTimes.push_back(time);
 
-										if (endTime < time)
-											endTime = time;
+										if (finalFrameEndTime < time)
+											finalFrameEndTime = time;
 									}
 									else {
 										splitTransform.x = std::stof(textFromDaeFile) * 0.1f;
@@ -72,7 +72,7 @@ void AnimationDataDae::readDaeFile(const char* filePath)
 										splitTransform.z = std::stof(textFromDaeFile) * 0.1f;
 										splitTransform.w = 0.0f;
 										
-										newBone->translate.push_back(splitTransform);	
+										newBone->translation.push_back(splitTransform);	
 									}
 									
 								}
@@ -85,9 +85,9 @@ void AnimationDataDae::readDaeFile(const char* filePath)
 							if (loopCycle == 1)
 							{
 								float time = std::stof(textFromDaeFile);
-								if (endTime < time)
-									endTime = time;
-								newBone->rotTime.push_back(time);
+								if (finalFrameEndTime < time)
+									finalFrameEndTime = time;
+								newBone->rotationTimes.push_back(time);
 							}
 							else {
 								XMFLOAT4 pushback = { std::stof(textFromDaeFile), 0.0f,0.0f,0.0f };
@@ -151,7 +151,7 @@ AnimationDataDae::~AnimationDataDae()
 	});
 }
 
-SkeletonAnimationData::SkeletonAnimationData() : tranCurrentFrame(0), rotCurrentFrame(0)
+SkeletonAnimationData::SkeletonAnimationData() : translationCurrentFrame(0), rotationCurrentFrame(0)
 {
 	previousRotationTime = 0;
 	previousTranslationTime = 0;

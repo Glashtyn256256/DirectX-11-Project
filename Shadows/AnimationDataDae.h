@@ -13,10 +13,10 @@ public:
 
 	std::string boneName; //getboneName
 
-	std::vector <float> tranTime;
-	std::vector<XMFLOAT4> translate;
+	std::vector <float> translationTimes;
+	std::vector<XMFLOAT4> translation;
 
-	std::vector<float> rotTime;
+	std::vector<float> rotationTimes;
 	std::vector<XMFLOAT4> rotations;
 	 
 	//std::vector<float> rotX;
@@ -25,14 +25,41 @@ public:
 
 	void ResetCurrentFrames() 
 	{
-		tranCurrentFrame = 0;
-		rotCurrentFrame = 0;
+		translationCurrentFrame = 0;
+		rotationCurrentFrame = 0;
 	}
-	int tranCurrentFrame; //Where the 
-	int rotCurrentFrame;
+	void ResetPreviousTimes()
+	{
+		previousTranslationTime = 0;
+		previousRotationTime = 0;
+	}
+	
+	int translationCurrentFrame; //Where the 
+	int rotationCurrentFrame;
 
 	float previousRotationTime;
 	float previousTranslationTime;
+
+	//this slows down the attack animation when it's private no.
+
+	/*int GetTranslationCurrentFrame() { return translationCurrentFrame; }
+	void SetTranslationCurrentFrame(int frame) { translationCurrentFrame = frame; }
+
+	int GetRotationCurrentFrame() { return rotationCurrentFrame; }
+	void SetRotationCurrentFrame(int frame) { rotationCurrentFrame = frame; }
+
+	float GetPreviousTranslationTime() { return previousTranslationTime; }
+	void SetPreviousTranslationTime(int previoustime) { previousTranslationTime = previoustime; }
+
+	float GetPreviousRotationTime() { return previousRotationTime; }
+	void SetPreviousRotationTime(int previoustime) { previousRotationTime = previoustime; }*/
+
+//private:
+//	int translationCurrentFrame; //Where the 
+//	int rotationCurrentFrame;
+//
+//	float previousRotationTime;
+//	float previousTranslationTime;
 
 };
 
@@ -44,7 +71,7 @@ public:
 	//when you're given a key link it to the skeletonanimationdata
 	std::map<std::string,SkeletonAnimationData*> boneAnimation;
 	void readDaeFile(const char* filePath);
-	float endTime;
+	float finalFrameEndTime;
 private:
 
 };

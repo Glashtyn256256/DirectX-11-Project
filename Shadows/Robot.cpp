@@ -169,20 +169,21 @@ void Robot::Update(float time, Aeroplane* plane)
 		currentAnimation = animationDeath;
 	}
 
-	
+	if (PlaneAttackWhenClose(plane))
+	{
+		currentAnimation = animationAttack;
+	}
 
 	if (!hasRobotBeenHit)
 	{
-		if (PlaneAttackWhenClose(plane))
-		{
-			currentAnimation = animationAttack;
-		}
+		
 		//since all the robots point to the same animations they all die when only one should get hit xD
-		if (HitByBullet(plane))
+		//Also hitbybullets is not working correctly not got the time to finish it.
+		/*if (HitByBullet(plane))
 		{
 			currentAnimation = animationDeath;
 			hasRobotBeenHit = true;
-		}
+		}*/
 	}
 	//if (currentAnimation && previousAnimation)
 	//{
@@ -210,7 +211,7 @@ bool Robot::PlaneAttackWhenClose(Aeroplane* plane)
 		ztemp = skeletonParts[b]->GetOffsetZPosition() - plane->GetZPosition();
 		distance = sqrt(pow(xtemp, 2) + pow(ytemp, 2) + pow(ztemp, 2));
 
-		if (distance < 60.0f)
+		if (distance < 40.0f)
 		{
 			return true;
 
@@ -227,9 +228,11 @@ bool Robot::HitByBullet(Aeroplane* plane)
 		{
 			for (int b = 0; b < skeletonParts.size(); b++)
 			{
-				distance = sqrt(pow(skeletonParts[b]->GetOffsetXPosition() - plane->bulletContainer[i]->bulletOffset.x, 2) + 
-					pow(skeletonParts[b]->GetOffsetYPosition() - plane->bulletContainer[i]->bulletOffset.y, 2) +
-					pow(skeletonParts[b]->GetOffsetZPosition() - plane->bulletContainer[i]->bulletOffset.z, 2));
+				xtemp = skeletonParts[b]->GetOffsetXPosition() - plane->bulletContainer[i]->bulletOffset.x;
+				ytemp = skeletonParts[b]->GetOffsetYPosition() - plane->bulletContainer[i]->bulletOffset.y;
+				ztemp = skeletonParts[b]->GetOffsetZPosition() - plane->bulletContainer[i]->bulletOffset.z;
+
+				distance = sqrt(pow(xtemp, 2) + pow(ytemp, 2) + pow(ztemp, 2));
 
 				if (distance < 5.0f)
 				{
@@ -252,16 +255,16 @@ void Robot::PlayAnimation(AnimationDataDae*& currentAnimation, float time)
 		{
 			Skeleton* bone = skeletonParts[i];
 
-			if (animTime >= currentAnimation->endTime)
+			if (animTime >= currentAnimation->finalFrameEndTime)
 			{
-				data->rotCurrentFrame = 0;
-				data->tranCurrentFrame = 0;
+				data->ResetCurrentFrames();
+				
 			}
-			int test(data->tranTime.size() - 1);
-			int currentTranFrame = data->tranCurrentFrame;
+			int test(data->translationTimes.size() - 1);
+			int currentTranFrame = data->translationCurrentFrame;
 			if (!(currentTranFrame > test))
 			{
-			float translationEndTime = data->tranTime[currentTranFrame];
+			float translationEndTime = data->translationTimes[currentTranFrame];
 			XMFLOAT4 previousTranslation;
 			XMFLOAT4 currentTranslation;
 
@@ -271,13 +274,13 @@ void Robot::PlayAnimation(AnimationDataDae*& currentAnimation, float time)
 			}
 			else
 			{
-				previousTranslation = data->translate[currentTranFrame - 1];
+				previousTranslation = data->translation[currentTranFrame - 1];
 			}
 
 			if (!(animTime >= translationEndTime))
 			{
 				float tLerp = (animTime - data->previousTranslationTime) / (translationEndTime - data->previousTranslationTime);
-				currentTranslation = data->translate[currentTranFrame];
+				currentTranslation = data->translation[currentTranFrame];
 				bone->SetSkeletonOffsetPosition(ReturnLerpedPosition(previousTranslation, currentTranslation, tLerp));
 			}
 			else
@@ -289,18 +292,18 @@ void Robot::PlayAnimation(AnimationDataDae*& currentAnimation, float time)
 				data->previousTranslationTime = translationEndTime;
 
 				currentTranFrame++;
-				if (currentTranFrame > data->tranTime.size())
-					currentTranFrame = data->tranTime.size();
+				if (currentTranFrame > data->translationTimes.size())
+					currentTranFrame = data->translationTimes.size();
 			}
-			data->tranCurrentFrame = currentTranFrame;
+			data->translationCurrentFrame = currentTranFrame;
 			}
 
-			int test1(data->rotTime.size() - 1);
-			int currentRotFrame = data->rotCurrentFrame;
+			int test1(data->rotationTimes.size() - 1);
+			int currentRotFrame = data->rotationCurrentFrame;
 			if (!(currentRotFrame > test1))
 			{
 
-			float rotationEndTime = data->rotTime[currentRotFrame];
+			float rotationEndTime = data->rotationTimes[currentRotFrame];
 			XMFLOAT4 previousRotation;
 			XMFLOAT4 currentRotation;
 
@@ -329,16 +332,16 @@ void Robot::PlayAnimation(AnimationDataDae*& currentAnimation, float time)
 				data->previousRotationTime = rotationEndTime;
 
 				currentRotFrame++;
-				if (currentRotFrame > data->rotTime.size())
-					currentRotFrame = data->rotTime.size();
+				if (currentRotFrame > data->rotationTimes.size())
+					currentRotFrame = data->rotationTimes.size();
 			}
-			data->rotCurrentFrame = currentRotFrame;
+			data->rotationCurrentFrame = currentRotFrame;
 			}
 		}
 	}
 
 
-	if (animTime >= currentAnimation->endTime)
+	if (animTime >= currentAnimation->finalFrameEndTime)
 	{
 		animTime = 0;
 		currentAnimation = nullptr;
