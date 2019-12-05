@@ -70,7 +70,7 @@ private:
 	
 	Transform transform;
 	int count = 0;
-	float animTime;
+	float animationElapsedTime;
 	bool hasRobotBeenHit;
 	bool RobotAttackPlane;
 
