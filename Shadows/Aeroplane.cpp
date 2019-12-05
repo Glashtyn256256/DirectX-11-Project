@@ -131,7 +131,7 @@ void Aeroplane::UpdateMatrices( void )
 	XMMATRIX mRotX, mRotY, mRotZ, mTrans;
 	XMMATRIX mPlaneCameraRot, mForwardMatrix;
 	
-	// Calculate m_mWorldMatrix for plane based on Euler rotation angles and position data.
+
 	m_mWorldMatrix = XMMatrixIdentity();
 	mRotX = XMMatrixRotationX(XMConvertToRadians(m_v4Rot.x));
 	mRotY = XMMatrixRotationY(XMConvertToRadians(m_v4Rot.y));
@@ -140,14 +140,12 @@ void Aeroplane::UpdateMatrices( void )
 
 	m_mWorldMatrix = mRotZ * mRotX * mRotY * m_mWorldTrans;
 
-	// [Week 2] Also calculate a matrix which ignores rotations in Z and X for the camera to parent to
+
 	mPlaneCameraRot = mRotY * m_mWorldTrans;
 
-	// [Week 2] Get the forward vector out of the world matrix
+
 	m_vForwardVector = m_mWorldMatrix.r[2];
 
-	// Calculate m_mPropWorldMatrix for propellor based on Euler rotation angles and position data.
-	// Parent the propellor to the plane
 	m_mPropWorldMatrix = XMMatrixIdentity();
 	mRotX = XMMatrixRotationX(XMConvertToRadians(m_v4PropRot.x));
 	mRotY = XMMatrixRotationY(XMConvertToRadians(m_v4PropRot.y));
@@ -156,8 +154,7 @@ void Aeroplane::UpdateMatrices( void )
 
 	m_mPropWorldMatrix =  mRotX * mRotY * mRotZ * mTrans * m_mWorldMatrix;
 
-	// Calculate m_mTurretWorldMatrix for propellor based on Euler rotation angles and position data.
-	// Parent the turret to the plane
+
 	m_mTurretWorldMatrix = XMMatrixIdentity();
 	mRotX = XMMatrixRotationX(XMConvertToRadians(m_v4TurretRot.x));
 	mRotY = XMMatrixRotationY(XMConvertToRadians(m_v4TurretRot.y));
@@ -166,8 +163,7 @@ void Aeroplane::UpdateMatrices( void )
 
 	m_mTurretWorldMatrix =  mRotX * mRotY * mRotZ * mTrans * m_mWorldMatrix;
 
-	// Calculate m_mGunWorldMatrix for gun based on Euler rotation angles and position data.
-	// Parent the gun to the turret
+
 	m_mGunWorldMatrix = XMMatrixIdentity();
 	mRotX = XMMatrixRotationX(XMConvertToRadians(m_v4GunRot.x));
 	mRotY = XMMatrixRotationY(XMConvertToRadians(m_v4GunRot.y));
@@ -176,14 +172,14 @@ void Aeroplane::UpdateMatrices( void )
 
 	m_mGunWorldMatrix =  mRotX * mRotY * mRotZ * mTrans * m_mTurretWorldMatrix;
 
-	// Calculate m_mCameraWorldMatrix for camera based on Euler rotation angles and position data.
+
 	m_mCamWorldMatrix = XMMatrixIdentity();
 	mRotX = XMMatrixRotationX(XMConvertToRadians(m_v4CamRot.x));
 	mRotY = XMMatrixRotationY(XMConvertToRadians(m_v4CamRot.y));
 	mRotZ = XMMatrixRotationZ(XMConvertToRadians(m_v4CamRot.z));
 	mTrans = XMMatrixTranslation(m_v4CamOff.x, m_v4CamOff.y, m_v4CamOff.z);
 
-	// [Week 2] Switch between parenting the camera to the plane (without X and Z rotations) and the gun based on m_bGunCam
+
 	if( m_bGunCam )
 		m_mCamWorldMatrix =  mTrans * mRotX * mRotY * mRotZ * m_mGunWorldMatrix;
 	else
@@ -289,6 +285,7 @@ void Aeroplane::Update( bool bPlayerControl )
 			else {
 				forwardVectorOff = false;
 			}
+			dbM = true;
 		}
 	}
 	else
@@ -314,11 +311,7 @@ void Aeroplane::Update( bool bPlayerControl )
 	
 	// Rotate propellor and turret
 	m_v4PropRot.z += 100 * m_fSpeed;
-	//m_v4TurretRot.y += 0.1f;
-
-	// Tilt gun up and down as turett rotates
-	m_v4GunRot.x = (sin((float)XMConvertToRadians(m_v4TurretRot.y*4.0f)) * 10.0f) - 10.0f;
-
+	
 	UpdateMatrices();
 
 	// Move Forward

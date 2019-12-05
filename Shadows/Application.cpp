@@ -34,10 +34,10 @@ bool Application::HandleStart()
 	time = normalMotionTime;
 	this->slowMotion = false;
 	drawBomb = false;
-
+	helpTextOn = true;
 	s_pApp = this;
 
-	this->SetWindowTitle("Shadows");
+	this->SetWindowTitle("Benjamin Moore - RT3DT Assignment 2019");
 
 	for (size_t i = 0; i < NUM_TEXTURE_FILES; ++i)
 	{
@@ -70,15 +70,13 @@ bool Application::HandleStart()
 	m_pShadowSamplerState = NULL;
 
 	m_pTimes = NULL;
-	m_pArial = NULL;
-	m_fontStyle = CommonFont::Style(VertexColour(255, 0, 0, 255), XMFLOAT2(.1f, .1f));
+	m_fontStyle = CommonFont::Style(VertexColour(255, 0, 0, 255), XMFLOAT2(.09f, .09f));
 
 
 	if (!this->CommonApp::HandleStart())
 		return false;
 
-	m_pTimes = CommonFont::CreateByName("Times", 16, 0, this);
-	m_pArial = CommonFont::CreateByName("Arial", 16, CommonFont::CREATE_BOLD, this);
+	m_pTimes = CommonFont::CreateByName("Times", 14, 0, this);
 
 	char aMaxNumLightsStr[100];
 	_snprintf_s(aMaxNumLightsStr, sizeof aMaxNumLightsStr, _TRUNCATE, "%d", MAX_NUM_LIGHTS);
@@ -239,7 +237,7 @@ void Application::HandleStop()
 	Release(m_drawHeightMapShaderPSConstants.pCB);
 
 	delete m_pHeightMap;
-
+	delete  m_pTimes;
 	delete m_pAeroplane;
 	delete m_pAeroplaneDefaultMeshes;
 	delete m_pAeroplaneShadowMeshes;
@@ -264,7 +262,7 @@ void Application::HandleUpdate()
 {
 	m_rotationAngle += m_rotationSpeed;
 
-	if( m_cameraState == CAMERA_MAP )
+	if( m_cameraState == CAMERA_MAP || m_cameraState == CAMERA_ROBOT )
 	{
 		if (this->IsKeyPressed('Q'))
 			m_cameraZ -= 2.0f;
@@ -310,6 +308,27 @@ void Application::HandleUpdate()
 		dbC = false;
 	}
 
+	static bool dbH = false;
+	if (this->IsKeyPressed('H'))
+	{
+		if (!dbH)
+		{
+			if (helpTextOn)
+			{
+				helpTextOn = false;
+			}
+			else
+			{
+				helpTextOn = true;
+			}
+			dbH = true;
+		}
+	}
+	else
+	{
+		dbH = false;
+	}
+
 	if( m_cameraState != CAMERA_PLANE && m_cameraState != CAMERA_GUN)
 	{
 		if( this->IsKeyPressed(VK_LEFT) )
@@ -349,15 +368,20 @@ void Application::HandleUpdate()
 	static bool dbS = false;
 	if (Application::s_pApp->IsKeyPressed('S'))
 	{
-		if (slowMotion)
+		if (!dbS)
 		{
-			//time = slowMotionTime;
-			slowMotion = false;
-		}
-		else
-		{
-			//time = normalMotionTime;
-			slowMotion = true;
+			if (slowMotion)
+			{
+				//time = slowMotionTime;
+				slowMotion = false;
+			}
+			else
+			{
+				//time = normalMotionTime;
+				slowMotion = true;
+			}
+
+			dbS = true;
 		}
 
 	}
@@ -502,8 +526,6 @@ void Application::RenderShadow()
 	XMVECTOR vPlanePos = XMLoadFloat4(&vTemp);
 
 	//*************************************************************************
-	// Your code to adjust the perspective projection of the light goes here
-	// You will need to calculate fovy, zn and zf instead of using these default values:
 	/*float fovy = 0.8f;
 	float zn = 1.0f;
 	float zf = 1000.0f;
@@ -523,8 +545,7 @@ void Application::RenderShadow()
 	float zn = distanceToPlane - ROBOT_RADIUS;
 	float zf = distanceToPlane + ROBOT_RADIUS;
 	//float aspect = RENDER_TARGET_WIDTH/ RENDER_TARGET_HEIGHT;
-	// You will find the following constants (defined above) useful:
-	// RENDER_TARGET_WIDTH, RENDER_TARGET_HEIGHT, AEROPLANE_RADIUS
+
 	//*************************************************************************
 	if (zn <= 0.f)
 	{
@@ -704,7 +725,40 @@ void Application::Render3D()
 	XMMATRIX worldMtx = XMMatrixTranslation(m_shadowCastingLightPosition.x,  m_shadowCastingLightPosition.y,  m_shadowCastingLightPosition.z);
 	this->SetWorldMatrix(worldMtx);
 	m_pShadowCastingLightMesh->Draw();
-	//m_pArial->DrawString(XMFLOAT3(0.f, 5.f, 0.f), &m_fontStyle, "Red Bold Arial");
+
+	
+
+	this->SetDefaultProjectionMatrix();
+
+	this->SetDefaultViewMatrix(XMFLOAT3(0.f, 0.f, -70.f), XMFLOAT3(0.f, 0.f, 0.f), XMFLOAT3(0.f, 1.f, 0.f));
+
+	this->SetDepthStencilState(false);
+
+	worldMtx = XMMatrixIdentity();
+	this->SetWorldMatrix(worldMtx);
+
+	
+	this->SetWorldMatrix(worldMtx);
+
+	if (helpTextOn)
+	{
+		m_pTimes->DrawString(XMFLOAT3(-28.f, 26.f, 0.f), &m_fontStyle, "H = Toggle screen help text");
+		m_pTimes->DrawString(XMFLOAT3(-28.f, 24.f, 0.f), &m_fontStyle, "C = switch to the next camera in the scene.");
+		m_pTimes->DrawString(XMFLOAT3(-28.f, 22.f, 0.f), &m_fontStyle, "F1: cut directly to a camera focussing on the animating robot.");
+		m_pTimes->DrawString(XMFLOAT3(-28.f, 20.f, 0.f), &m_fontStyle, "F2: cut directly to a camera in the cockpit of the flying plane.");
+		m_pTimes->DrawString(XMFLOAT3(-28.f, 18.f, 0.f), &m_fontStyle, "Q/A/O/P = up/down/left/right controls for flying the plane.");
+		m_pTimes->DrawString(XMFLOAT3(-28.f, 16.f, 0.f), &m_fontStyle, "M = toggle the forward motion of plane (free roaming camera)");
+		m_pTimes->DrawString(XMFLOAT3(-28.f, 14.f, 0.f), &m_fontStyle, "B = drop a bomb (automatically switches to bomb-cam)");
+		m_pTimes->DrawString(XMFLOAT3(-28.f, 12.f, 0.f), &m_fontStyle, "Space = shoot");
+		m_pTimes->DrawString(XMFLOAT3(-28.f, 10.f, 0.f), &m_fontStyle, "1/2/3 = Play robot animations (idle/attack/die)");
+		m_pTimes->DrawString(XMFLOAT3(-28.f, 8.f, 0.f), &m_fontStyle, "S = slow motion mode for animations (1 frame per second).");
+		m_pTimes->DrawString(XMFLOAT3(-28.f, 6.f, 0.f), &m_fontStyle, "First Camera = Q/A to zoom in and out, space bar to stop rotating");
+		m_pTimes->DrawString(XMFLOAT3(-28.f, 4.f, 0.f), &m_fontStyle, "Second Camera = This is the aeroplane");
+		m_pTimes->DrawString(XMFLOAT3(-28.f, 2.f, 0.f), &m_fontStyle, "Third Camera = This is the Robot, camera is stationary");
+		m_pTimes->DrawString(XMFLOAT3(-28.f, 0.f, 0.f), &m_fontStyle, "Fourth Camera = Gun Camera");
+		m_pTimes->DrawString(XMFLOAT3(-28.f, -2.f, 0.f), &m_fontStyle, "Fith Camera = This is the bomb, will be blank if no bomb has spawned");
+		m_pTimes->DrawString(XMFLOAT3(-28.f, -4.f, 0.f), &m_fontStyle, "Fly near robots for them to attack you");
+	}
 }
 
 //////////////////////////////////////////////////////////////////////////

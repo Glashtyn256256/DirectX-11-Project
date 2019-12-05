@@ -125,12 +125,12 @@ private:
 	bool mSphereCollided;
 	bool bombDropped;
 	bool drawBomb;
+	bool helpTextOn;
 	const int BOUNCE_LIMIT = 3;
 	int numberOfBounces;
 	XMFLOAT4 mGravityAcc;
 
 	CommonFont *m_pTimes;
-	CommonFont *m_pArial;
 	CommonFont::Style m_fontStyle;
 };
 

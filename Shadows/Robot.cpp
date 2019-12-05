@@ -73,9 +73,9 @@ void Robot::SetUpMeshes()
 };
 
 void Robot::SetUpAnimations(void) {
-	animationAttack = new AnimationDataDae("Resources/Robot/MayaFiles/RobotAttackAnim.dae");
-	animationIdle = new AnimationDataDae("Resources/Robot/MayaFiles/RobotIdleAnim.dae");
-	animationDeath = new AnimationDataDae("Resources/Robot/MayaFiles/RobotDieAnim.dae");
+	animationAttack = new AnimationDataDae("Resources/Robot/Anims/RobotAttackAnim.dae");
+	animationIdle = new AnimationDataDae("Resources/Robot/Anims/RobotIdleAnim.dae");
+	animationDeath = new AnimationDataDae("Resources/Robot/Anims/RobotDieAnim.dae");
 
 	currentAnimation = nullptr;
 	animationElapsedTime = 0;
