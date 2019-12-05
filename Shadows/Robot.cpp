@@ -19,11 +19,11 @@ void Robot::ReadTextFileAndSetUpModel(std::string filepath)
 	std::string textLineFromFile;
 	std::fstream textFile(filepath);
 
-	std::getline(textFile, textLineFromFile);
-	textLineFromFile.erase(std::remove(textLineFromFile.begin(),
-		textLineFromFile.end(), '\"'),
-		textLineFromFile.end());
-	folderName = textLineFromFile;
+	//std::getline(textFile, textLineFromFile);
+	//textLineFromFile.erase(std::remove(textLineFromFile.begin(),
+	//	textLineFromFile.end(), '\"'),
+	//	textLineFromFile.end());
+	//folderName = textLineFromFile;
 
 	while (!textFile.eof())
 	{
@@ -529,7 +529,8 @@ void Robot::LoadResources(Robot* robotmesh)
 		for (int i = 1; i < skeletonParts.size(); i++)
 		{
 			std::string foldername;
-			foldername = "Resources/" + folderName + "/" + skeletonParts[i]->GetPartName() + ".x";
+			//foldername = "Resources/" + folderName + "/" + skeletonParts[i]->GetPartName() + ".x";
+			foldername = "Resources/Robot/" + skeletonParts[i]->GetPartName() + ".x";
 			meshCollection[i - 1] = CommonMesh::LoadFromXFile(Application::s_pApp, foldername.c_str());
 			//shadowMeshCollection[i - 1] = meshCollection[i - 1];
 			shadowMeshCollection[i - 1] = CommonMesh::LoadFromXFile(Application::s_pApp, foldername.c_str());
